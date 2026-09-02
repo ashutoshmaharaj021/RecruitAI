@@ -33,15 +33,12 @@ async def upload_resume(file: UploadFile = File(...)):
     # Parse resume
     parsed_data = parse_resume(text)
 
-
     db = SessionLocal()
-    resume = Resume(
-        name=parsed_data["name"],
-        email=parsed_data["email"],
-        phone=parsed_data["phone"],
-        skills=", ".join(parsed_data["skills"]),
-        raw_text=text
-    )
+    resume = Resume(name=parsed_data["name"],
+                    email=parsed_data["email"],
+                    phone=parsed_data["phone"],
+                    skills=", ".join(parsed_data["skills"]),
+                    raw_text=text)
 
     db.add(resume)
     db.commit()
@@ -54,3 +51,24 @@ async def upload_resume(file: UploadFile = File(...)):
         "parsed_data": parsed_data,
         "raw_text": text[:2000]
     }
+@router.get("/resumes")
+def get_resumes():
+    db = SessionLocal()
+
+    try:
+        resumes = db.query(Resume).all()
+
+        return [
+            {
+                "id": resume.id,
+                "name": resume.name,
+                "email": resume.email,
+                "phone": resume.phone,
+                "skills": resume.skills,
+                "raw_text": resume.raw_text
+            }
+            for resume in resumes
+        ]
+
+    finally:
+        db.close()
