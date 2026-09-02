@@ -9,5 +9,5 @@ class Resume(Base):
     name = Column(String)
     email = Column(String)
     phone = Column(String)
-    skills = Column(Text)
+    skills = Column(Text)      
     raw_text = Column(Text)
