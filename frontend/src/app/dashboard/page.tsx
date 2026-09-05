@@ -1,19 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useState, useRef, useEffect } from "react";
+import axios from "axios";
 
 interface Candidate {
   id: number;
   name: string;
-  role: string;
   email: string;
-  parsedAt: string;
-  avatarUrl: string;
-  statusColor: "secondary" | "tertiary"; // green | orange
-  skills: { label: string; variant: "primary" | "secondary" | "tertiary" }[];
-  extraSkills?: number;
+  phone: string;
+  skills: string;
 }
 
 interface Stat {
@@ -21,8 +16,6 @@ interface Stat {
   value: string;
   sub: React.ReactNode;
 }
-
-// ─── Static data (replace with API calls later) ───────────────────────────────
 
 const STATS: Stat[] = [
   {
@@ -40,7 +33,10 @@ const STATS: Stat[] = [
     value: "98.4%",
     sub: (
       <div className="w-full bg-[#333539] rounded-full h-1">
-        <div className="bg-[#adc6ff] h-full rounded-full" style={{ width: "98.4%" }} />
+        <div
+          className="bg-[#adc6ff] h-full rounded-full"
+          style={{ width: "98.4%" }}
+        />
       </div>
     ),
   },
@@ -105,8 +101,6 @@ const CANDIDATES: Candidate[] = [
   },
 ];
 
-// ─── Skill badge variant map ──────────────────────────────────────────────────
-
 const SKILL_STYLES: Record<string, string> = {
   primary: "bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20",
   secondary: "bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20",
@@ -118,15 +112,26 @@ const STATUS_DOT: Record<string, string> = {
   tertiary: "bg-[#ffb786]",
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+function getSkills(skills: string) {
+  if (!skills) return [];
+
+  return skills
+    .split(",")
+    .map((skill) => skill.trim())
+    .filter(Boolean);
+}
 
 function TopNav() {
   return (
     <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
       {/* Logo */}
       <div className="flex items-center gap-1">
-        <span className="material-symbols-outlined text-[#adc6ff]">clinical_notes</span>
-        <span className="text-2xl font-bold text-white tracking-tighter">RecruitAI</span>
+        <span className="material-symbols-outlined text-[#adc6ff]">
+          clinical_notes
+        </span>
+        <span className="text-2xl font-bold text-white tracking-tighter">
+          RecruitAI
+        </span>
       </div>
 
       {/* Desktop links */}
@@ -141,7 +146,9 @@ function TopNav() {
             key={label}
             href="#"
             className={`text-[15px] transition-colors duration-200 ${
-              active ? "text-[#adc6ff] font-medium" : "text-[#c2c6d6] hover:text-[#adc6ff]"
+              active
+                ? "text-[#adc6ff] font-medium"
+                : "text-[#c2c6d6] hover:text-[#adc6ff]"
             }`}
           >
             {label}
@@ -152,7 +159,9 @@ function TopNav() {
       {/* Right actions */}
       <div className="flex items-center gap-4">
         <button className="hidden md:flex items-center gap-1 bg-[#adc6ff] text-[#002e6a] px-4 py-2 rounded-xl text-[13px] font-medium active:scale-95 transition-transform glow-button">
-          <span className="material-symbols-outlined text-[18px]">cloud_upload</span>
+          <span className="material-symbols-outlined text-[18px]">
+            cloud_upload
+          </span>
           Quick Upload
         </button>
         <div className="w-8 h-8 rounded-full overflow-hidden border border-[#424754]">
@@ -198,8 +207,12 @@ function StatCard({ stat }: { stat: Stat }) {
   return (
     <div className="glass-card gradient-border p-6 flex flex-col justify-between rounded-xl">
       <div>
-        <p className="text-[13px] font-medium text-[#c2c6d6] uppercase tracking-widest">{stat.label}</p>
-        <h2 className="text-[32px] font-semibold tracking-[-0.02em] text-white mt-1">{stat.value}</h2>
+        <p className="text-[13px] font-medium text-[#c2c6d6] uppercase tracking-widest">
+          {stat.label}
+        </p>
+        <h2 className="text-[32px] font-semibold tracking-[-0.02em] text-white mt-1">
+          {stat.value}
+        </h2>
       </div>
       <div className="mt-4">{stat.sub}</div>
     </div>
@@ -208,61 +221,85 @@ function StatCard({ stat }: { stat: Stat }) {
 
 function SkillBadge({ label, variant }: { label: string; variant: string }) {
   return (
-    <span className={`px-3 py-1 rounded-full text-[13px] font-medium ${SKILL_STYLES[variant] ?? SKILL_STYLES.primary}`}>
+    <span
+      className={`px-3 py-1 rounded-full text-[13px] font-medium ${SKILL_STYLES[variant] ?? SKILL_STYLES.primary}`}
+    >
       {label}
     </span>
   );
 }
 
 function CandidateCard({ candidate }: { candidate: Candidate }) {
+  const skills = getSkills(candidate.skills);
+
   return (
     <div className="glass-card gradient-border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group rounded-xl">
       {/* Avatar + Name */}
       <div className="flex items-center gap-6">
         <div className="relative shrink-0">
-          <img
-            src={candidate.avatarUrl}
-            alt={candidate.name}
-            className="w-12 h-12 rounded-xl object-cover border border-[#424754]"
-          />
-          <div
-            className={`absolute -bottom-1 -right-1 w-4 h-4 ${STATUS_DOT[candidate.statusColor]} border-2 border-[#111318] rounded-full`}
-          />
+          <div className="w-12 h-12 rounded-xl bg-[#4d8eff]/10 border border-[#adc6ff]/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-[#adc6ff]">
+              person
+            </span>
+          </div>
+
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#4edea3] border-2 border-[#111318] rounded-full" />
         </div>
+
         <div>
           <h3 className="text-[24px] font-medium text-white group-hover:text-[#adc6ff] transition-colors leading-tight">
-            {candidate.name}
+            {candidate.name || "Unknown Candidate"}
           </h3>
-          <p className="text-[15px] text-[#c2c6d6]">{candidate.role}</p>
+
+          <p className="text-[15px] text-[#c2c6d6]">Resume #{candidate.id}</p>
         </div>
       </div>
 
       {/* Skills */}
       <div className="flex flex-wrap gap-2">
-        {candidate.skills.map((s) => (
-          <SkillBadge key={s.label} label={s.label} variant={s.variant} />
+        {skills.slice(0, 4).map((skill, index) => (
+          <SkillBadge
+            key={`${skill}-${index}`}
+            label={skill}
+            variant={
+              index % 3 === 0
+                ? "primary"
+                : index % 3 === 1
+                  ? "secondary"
+                  : "tertiary"
+            }
+          />
         ))}
-        {candidate.extraSkills && (
+
+        {skills.length > 4 && (
           <span className="px-3 py-1 rounded-full bg-[#333539]/50 text-[#c2c6d6] text-[13px] font-medium">
-            +{candidate.extraSkills} skills
+            +{skills.length - 4} skills
           </span>
         )}
       </div>
 
-      {/* Meta + Actions */}
-      <div className="flex items-center justify-between md:justify-end gap-10">
+      {/* Contact */}
+      <div className="flex items-center justify-between md:justify-end gap-6">
         <div className="text-right hidden sm:block">
-          <p className="text-[14px] font-mono text-[#c2c6d6]">{candidate.email}</p>
-          <p className="text-[13px] text-[#8c909f]">{candidate.parsedAt}</p>
+          <p className="text-[14px] font-mono text-[#c2c6d6]">
+            {candidate.email || "No email"}
+          </p>
+
+          <p className="text-[13px] text-[#8c909f]">
+            {candidate.phone || "No phone"}
+          </p>
         </div>
-        <div className="flex gap-2">
-          <button className="p-2 hover:bg-[#333539] rounded-xl transition-all">
-            <span className="material-symbols-outlined text-[#8c909f]">open_in_new</span>
-          </button>
-          <button className="p-2 hover:bg-[#333539] rounded-xl transition-all">
-            <span className="material-symbols-outlined text-[#8c909f]">more_vert</span>
-          </button>
-        </div>
+
+        <button
+          className="p-2 hover:bg-[#333539] rounded-xl transition-all"
+          onClick={() => {
+            window.location.href = "/resumes";
+          }}
+        >
+          <span className="material-symbols-outlined text-[#8c909f]">
+            open_in_new
+          </span>
+        </button>
       </div>
     </div>
   );
@@ -278,7 +315,7 @@ function DropZone() {
     setDragging(false);
     const f = e.dataTransfer.files[0];
     if (f) setFileName(f.name);
-  };  
+  };
 
   return (
     <div
@@ -287,14 +324,19 @@ function DropZone() {
           ? "border-[#adc6ff]/80 bg-[#1a1c20]/60"
           : "border-[#424754] hover:border-[#adc6ff]/50"
       }`}
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
     >
       <span
         className={`material-symbols-outlined text-[48px] transition-colors ${
-          dragging ? "text-[#adc6ff]" : "text-[#424754] group-hover:text-[#adc6ff]"
+          dragging
+            ? "text-[#adc6ff]"
+            : "text-[#424754] group-hover:text-[#adc6ff]"
         }`}
       >
         upload_file
@@ -303,7 +345,9 @@ function DropZone() {
         <h4 className="text-[24px] font-medium text-white">
           {fileName ? fileName : "Drop resumes here to parse"}
         </h4>
-        <p className="text-[15px] text-[#c2c6d6]">Supports PDF, DOCX, and JSON (max 10MB each)</p>
+        <p className="text-[15px] text-[#c2c6d6]">
+          Supports PDF, DOCX, and JSON (max 10MB each)
+        </p>
       </div>
       <input
         ref={inputRef}
@@ -345,7 +389,9 @@ function Footer() {
   return (
     <footer className="w-full py-16 border-t border-[#424754] bg-[#111318]">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-8 gap-6">
-        <span className="text-[24px] font-bold text-white tracking-tighter">RecruitAI</span>
+        <span className="text-[24px] font-bold text-white tracking-tighter">
+          RecruitAI
+        </span>
         <div className="flex gap-10">
           {["Privacy", "Terms", "API Docs", "Contact"].map((l) => (
             <span
@@ -356,7 +402,9 @@ function Footer() {
             </span>
           ))}
         </div>
-        <span className="text-[15px] text-[#c2c6d6]">© 2024 RecruitAI. Precision Intelligence.</span>
+        <span className="text-[15px] text-[#c2c6d6]">
+          © 2024 RecruitAI. Precision Intelligence.
+        </span>
       </div>
     </footer>
   );
@@ -365,6 +413,68 @@ function Footer() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const [resumes, setResumes] = useState<Candidate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchResumes = async () => {
+      try {
+        const response = await axios.get<Candidate[]>(
+          "http://127.0.0.1:8000/resumes",
+        );
+
+        setResumes(response.data);
+      } catch (err) {
+        console.error("Failed to fetch resumes:", err);
+        setError("Unable to load resume data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResumes();
+  }, []);
+
+  const totalParsed = resumes.length;
+
+  const STATS: Stat[] = [
+    {
+      label: "Total Parsed",
+      value: totalParsed.toString(),
+      sub: (
+        <div className="flex items-center gap-1 text-[#4edea3]">
+          <span className="material-symbols-outlined text-base">database</span>
+
+          <span className="text-[13px] font-medium">Stored in PostgreSQL</span>
+        </div>
+      ),
+    },
+    {
+      label: "Parser Status",
+      value: "Active",
+      sub: (
+        <div className="flex items-center gap-1 text-[#4edea3]">
+          <span className="material-symbols-outlined text-base">
+            check_circle
+          </span>
+
+          <span className="text-[13px] font-medium">FastAPI connected</span>
+        </div>
+      ),
+    },
+    {
+      label: "Database",
+      value: "Online",
+      sub: (
+        <div className="flex items-center gap-1 text-[#4edea3]">
+          <span className="material-symbols-outlined text-base">storage</span>
+
+          <span className="text-[13px] font-medium">PostgreSQL</span>
+        </div>
+      ),
+    },
+  ];
   return (
     <>
       {/* Material Symbols font */}
@@ -418,7 +528,6 @@ export default function DashboardPage() {
 
         <main className="md:ml-[240px] pt-24 pb-16 px-8 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-10">
-
             {/* Stats */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {STATS.map((stat) => (
@@ -444,16 +553,52 @@ export default function DashboardPage() {
 
             {/* Candidate list */}
             <section className="space-y-4">
-              {CANDIDATES.map((c) => (
-                <CandidateCard key={c.id} candidate={c} />
-              ))}
+              {loading && (
+                <div className="glass-card rounded-xl p-12 text-center">
+                  <span className="material-symbols-outlined text-[#adc6ff] text-[48px] animate-spin">
+                    progress_activity
+                  </span>
+
+                  <p className="text-[#c2c6d6] mt-4">
+                    Loading parsed resumes...
+                  </p>
+                </div>
+              )}
+
+              {!loading && error && (
+                <div className="glass-card rounded-xl p-10 text-center">
+                  <span className="material-symbols-outlined text-[#ffb4ab] text-[48px]">
+                    error
+                  </span>
+
+                  <p className="text-[#c2c6d6] mt-4">{error}</p>
+                </div>
+              )}
+
+              {!loading && !error && resumes.length === 0 && (
+                <div className="glass-card rounded-xl p-12 text-center">
+                  <span className="material-symbols-outlined text-[#8c909f] text-[48px]">
+                    description
+                  </span>
+
+                  <p className="text-[#c2c6d6] mt-4">
+                    No resumes have been parsed yet.
+                  </p>
+                </div>
+              )}
+
+              {!loading &&
+                !error &&
+                resumes.map((resume) => (
+                  <CandidateCard key={resume.id} candidate={resume} />
+                ))}
             </section>
 
             {/* Drop zone */}
             <DropZone />
           </div>
         </main>
-
+  
         <Footer />
         <MobileBottomNav />
       </div>
