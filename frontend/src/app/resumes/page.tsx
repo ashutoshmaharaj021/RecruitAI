@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 
@@ -31,6 +31,8 @@ export default function ResumesPage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setsearchQuery] = useState("");
+  const [selectedSkill, setselectedSkill] = useState("all");
 
   // Fetch resumes from FastAPI
   useEffect(() => {
@@ -53,6 +55,45 @@ export default function ResumesPage() {
 
     fetchResumes();
   }, []);
+
+
+  // Get all unique skills from all resumes
+  const allSkills = useMemo(() => {
+    const skillSet = new Set<string>();
+
+    resumes.forEach((resume) => {
+      getSkills(resume.skills).forEach((skill) => {
+        skillSet.add(skill);
+      });
+    });
+
+    return Array.from(skillSet).sort();
+  }, [resumes]);
+
+  // Filter resumes based on search and selected skill
+  const filteredResumes = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return resumes.filter((resume) => {
+      const matchesSearch =
+        !query ||
+        resume.name.toLowerCase().includes(query) ||
+        resume.email.toLowerCase().includes(query) ||
+        resume.phone.toLowerCase().includes(query) ||
+        resume.skills.toLowerCase().includes(query);
+
+      const resumeSkills = getSkills(resume.skills);
+
+      const matchesSkill =
+        selectedSkill === "all" ||
+        resumeSkills.some(
+          (skill) => skill.toLowerCase() === selectedSkill.toLowerCase()
+        );
+
+      return matchesSearch && matchesSkill;
+    });
+  }, [resumes, searchQuery, selectedSkill]);
+
 
   return (
     <>
@@ -182,14 +223,119 @@ export default function ResumesPage() {
               </Link>
 
             </div>
+{/* Search & Filter */}
 
-            {/* Resume Count */}
+{!loading && !error && filteredResumes.length > 0 && (
+  <div className="mb-8 space-y-4">
 
-            {!loading && !error && (
-              <div className="mb-6 text-[14px] text-[#8c909f]">
-                {resumes.length} resume{resumes.length !== 1 ? "s" : ""} found
-              </div>
-            )}
+    <div className="flex flex-col md:flex-row gap-4">
+
+      {/* Search Box */}
+
+      <div className="relative flex-1">
+
+        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8c909f]">
+          search
+        </span>
+
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setsearchQuery(e.target.value)}
+          placeholder="Search by name, email, phone, or skill..."
+          className="w-full bg-[#0c0e12] border border-[#424754] rounded-xl py-3.5 pl-12 pr-4 text-[14px] text-white placeholder:text-[#6f7380] outline-none focus:border-[#4d8eff] transition-colors"
+        />
+
+        {searchQuery && (
+          <button
+            onClick={() => setsearchQuery("")}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8c909f] hover:text-white transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              close
+            </span>
+          </button>
+        )}
+
+      </div>
+
+      {/* Skill Filter */}
+
+      <div className="relative md:w-64">
+
+        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8c909f] pointer-events-none">
+          filter_list
+        </span>
+
+        <select
+          value={selectedSkill}
+          onChange={(e) => setselectedSkill(e.target.value)}
+          className="w-full appearance-none bg-[#0c0e12] border border-[#424754] rounded-xl py-3.5 pl-12 pr-10 text-[14px] text-white outline-none focus:border-[#4d8eff] transition-colors cursor-pointer"
+        >
+          <option value="all">All Skills</option>
+
+          {allSkills.map((skill) => (
+            <option key={skill} value={skill}>
+              {skill}
+            </option>
+          ))}
+        </select>
+
+        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#8c909f] pointer-events-none">
+          expand_more
+        </span>
+
+      </div>
+
+    </div>
+
+    {/* Result Count */}
+
+    <div className="text-[14px] text-[#8c909f]">
+      {filteredResumes.length} of {resumes.length} resume
+      {resumes.length !== 1 ? "s" : ""} shown
+    </div>
+
+  </div>
+)}
+
+{/* No Search Results */}
+
+{!loading &&
+  !error &&
+  resumes.length > 0 &&
+  filteredResumes.length === 0 && (
+    <div className="glass-card rounded-xl p-16 text-center">
+
+      <span className="material-symbols-outlined text-[#8c909f] text-[64px]">
+        search_off
+      </span>
+
+      <h2 className="text-2xl font-medium mt-4">
+        No matching resumes
+      </h2>
+
+      <p className="text-[#c2c6d6] mt-2">
+        Try a different search term or skill filter.
+      </p>
+
+      <button
+        onClick={() => {
+          setsearchQuery("");
+          setselectedSkill("all");
+        }}
+        className="inline-flex items-center gap-2 mt-6 px-5 py-3 bg-[#4d8eff] text-white rounded-xl font-medium hover:brightness-110 transition-all"
+      >
+        <span className="material-symbols-outlined text-[20px]">
+          restart_alt
+        </span>
+        Clear Filters
+      </button>
+
+    </div>
+  )}
+
+
 
             {/* Loading */}
 
@@ -256,10 +402,10 @@ export default function ResumesPage() {
 
             {/* Resume Cards */}
 
-            {!loading && !error && resumes.length > 0 && (
+            {!loading && !error && filteredResumes.length > 0 && (
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {resumes.map((resume) => {
+                {filteredResumes.map((resume) => {
 
                   const skills = getSkills(resume.skills);
 
