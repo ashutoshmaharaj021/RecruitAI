@@ -370,19 +370,16 @@ export default function ResumesPage() {
                           Stored in PostgreSQL
                         </span>
 
-                        <button
-                          className="flex items-center gap-1 text-[13px] text-[#adc6ff] hover:text-white transition-colors"
-                          onClick={() => {
-                            alert(
-                              `Resume #${resume.id}\\n\\n${resume.raw_text}`
-                            );
-                          }}
-                        >
-                          View Resume
-                          <span className="material-symbols-outlined text-[18px]">
-                            arrow_forward
-                          </span>
-                        </button>
+                        <Link
+  href={`/resumes/${resume.id}`}
+  className="flex items-center gap-1 text-[13px] text-[#adc6ff] hover:text-white transition-colors"
+>
+  View Resume
+
+  <span className="material-symbols-outlined text-[18px]">
+    arrow_forward
+  </span>
+</Link>
 
                       </div>
 

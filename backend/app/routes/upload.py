@@ -1,5 +1,6 @@
 from app.database.db import SessionLocal
 from app.models.resume_model import Resume
+from fastapi import HTTPException
 
 from fastapi import APIRouter, UploadFile, File
 import fitz
@@ -69,6 +70,31 @@ def get_resumes():
             }
             for resume in resumes
         ]
+
+    finally:
+        db.close()
+
+@router.get("/resumes/{resume_id}")
+def get_resume(resume_id: int):
+    db = SessionLocal()
+
+    try:
+        resume = db.query(Resume).filter(Resume.id == resume_id).first()
+
+        if not resume:
+            raise HTTPException(
+                status_code=404,
+                detail="Resume not found"
+            )
+
+        return {
+            "id": resume.id,
+            "name": resume.name,
+            "email": resume.email,
+            "phone": resume.phone,
+            "skills": resume.skills,
+            "raw_text": resume.raw_text
+        }
 
     finally:
         db.close()
