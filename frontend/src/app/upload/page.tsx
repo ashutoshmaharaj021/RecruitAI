@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Link from "next/link";
 // TODO: import axios from "axios";
 // TODO: import { useRouter } from "next/navigation";
 
@@ -58,69 +59,123 @@ function getStatusLabel(progress: number): string {
 function TopNav() {
   return (
     <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
+
       {/* Logo */}
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-[#adc6ff] text-2xl">clinical_notes</span>
-        <span className="text-2xl font-bold text-white tracking-tighter">RecruitAI</span>
-      </div>
+      <Link href="/" className="flex items-center gap-2">
+        <span className="material-symbols-outlined text-[#adc6ff] text-2xl">
+          clinical_notes
+        </span>
+
+        <span className="text-2xl font-bold text-white tracking-tighter">
+          RecruitAI
+        </span>
+      </Link>
 
       {/* Desktop links */}
       <div className="hidden md:flex gap-6">
-        {[
-          { label: "Dashboard", active: false },
-          { label: "Resumes",   active: false },
-          { label: "Uploads",   active: true  },
-          { label: "Settings",  active: false },
-        ].map(({ label, active }) => (
-          <a
-            key={label}
-            href="#"
-            className={`text-[15px] transition-colors duration-200 ${
-              active
-                ? "text-[#adc6ff] font-medium"
-                : "text-[#c2c6d6] hover:text-[#adc6ff]"
-            }`}
-          >
-            {label}
-          </a>
-        ))}
+
+        <Link
+          href="/dashboard"
+          className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          href="/resumes"
+          className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Resumes
+        </Link>
+
+        <Link
+          href="/upload"
+          className="text-[15px] text-[#adc6ff] font-medium transition-colors duration-200"
+        >
+          Uploads
+        </Link>
+
+        <span
+          className="text-[15px] text-[#8c909f] cursor-not-allowed"
+          title="Settings page coming soon"
+        >
+          Settings
+        </span>
+
       </div>
 
       {/* Avatar */}
-      <div className="h-8 w-8 rounded-full bg-[#282a2e] border border-[#424754] overflow-hidden cursor-pointer active:scale-95 transition-transform">
+      <div className="h-8 w-8 rounded-full bg-[#282a2e] border border-[#424754] overflow-hidden cursor-pointer">
         <img
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuDN6r_rvoEY8AvtnU5k2J335DT3Wsu-hGJpZYJ4z35OGd62ia982tpLmCdmAAT1hOLxmf8lUmlCLAhoD5ank72hHP1zc6NgE5Gx07QmgqmEmuzADC7LwBHuduhiCJTX8WMHlCx67oOT5jG7hPWqaqAWCYPnIgq4xFle8JEShTN3StrjgBw5M4tc86J_C9Wit6KN3Zo-tG_Qy_8941RymiftdPX1niMxsg5z4VVultrqP8-iWEXp74rt1lHWpVmaXUp8cYrDvlhYgwY"
           alt="User Profile"
           className="h-full w-full object-cover"
         />
       </div>
+
     </nav>
   );
 }
 
 function Sidebar() {
   const items = [
-    { icon: "dashboard",    label: "Dashboard", active: false },
-    { icon: "description",  label: "Resumes",   active: false },
-    { icon: "cloud_upload", label: "Uploads",   active: true  },
-    { icon: "settings",     label: "Settings",  active: false },
+    {
+      icon: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard",
+      active: false,
+    },
+    {
+      icon: "description",
+      label: "Resumes",
+      href: "/resumes",
+      active: false,
+    },
+    {
+      icon: "cloud_upload",
+      label: "Uploads",
+      href: "/upload",
+      active: true,
+    },
   ];
 
   return (
     <aside className="hidden md:flex flex-col gap-1 w-[240px] fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#0c0e12] border-r border-[#424754] px-4 pt-6 z-40">
-      {items.map(({ icon, label, active }) => (
-        <div
+
+      {items.map(({ icon, label, href, active }) => (
+        <Link
           key={label}
-          className={`flex items-center gap-3 px-4 py-2 rounded-xl cursor-pointer transition-all active:opacity-80 ${
+          href={href}
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${
             active
               ? "bg-[#4d8eff]/10 text-[#adc6ff] font-medium"
               : "text-[#c2c6d6] hover:bg-[#333539]/50 hover:text-white"
           }`}
         >
-          <span className="material-symbols-outlined">{icon}</span>
-          <span className="text-[15px]">{label}</span>
-        </div>
+          <span className="material-symbols-outlined">
+            {icon}
+          </span>
+
+          <span className="text-[15px]">
+            {label}
+          </span>
+        </Link>
       ))}
+
+      {/* Settings - not implemented yet */}
+      <div
+        title="Settings page coming soon"
+        className="flex items-center gap-3 px-4 py-2 rounded-xl text-[#8c909f] cursor-not-allowed"
+      >
+        <span className="material-symbols-outlined">
+          settings
+        </span>
+
+        <span className="text-[15px]">
+          Settings
+        </span>
+      </div>
+
     </aside>
   );
 }
@@ -329,26 +384,55 @@ function InfoCard({
 
 function MobileBottomNav() {
   const items = [
-    { icon: "home",           label: "Home",    active: false },
-    { icon: "history",        label: "History", active: false },
-    { icon: "add_circle",     label: "Upload",  active: true  },
-    { icon: "account_circle", label: "Profile", active: false },
+    {
+      icon: "home",
+      label: "Home",
+      href: "/",
+      active: false,
+    },
+    {
+      icon: "history",
+      label: "History",
+      href: "/resumes",
+      active: false,
+    },
+    {
+      icon: "add_circle",
+      label: "Upload",
+      href: "/upload",
+      active: true,
+    },
+    {
+      icon: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard",
+      active: false,
+    },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-[#111318]/90 backdrop-blur-lg border-t border-[#424754] rounded-t-[0.75rem] shadow-[0px_-8px_32px_rgba(0,0,0,0.8)]">
-      {items.map(({ icon, label, active }) => (
-        <a
+
+      {items.map(({ icon, label, href, active }) => (
+        <Link
           key={label}
-          href="#"
+          href={href}
           className={`flex flex-col items-center transition-all active:scale-90 ${
-            active ? "text-[#adc6ff]" : "text-[#c2c6d6] hover:text-white"
+            active
+              ? "text-[#adc6ff]"
+              : "text-[#c2c6d6] hover:text-white"
           }`}
         >
-          <span className="material-symbols-outlined">{icon}</span>
-          <span className="text-[13px] font-medium">{label}</span>
-        </a>
+          <span className="material-symbols-outlined">
+            {icon}
+          </span>
+
+          <span className="text-[13px] font-medium">
+            {label}
+          </span>
+        </Link>
       ))}
+
     </nav>
   );
 }

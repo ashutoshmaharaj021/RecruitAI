@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -14,27 +15,49 @@ interface ParsedResume {
 function TopAppBar() {
   return (
     <header className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] shadow-sm flex items-center justify-between px-8 h-16 z-50">
+      
       {/* Logo */}
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-[#adc6ff]">clinical_notes</span>
-        <span className="text-2xl font-bold text-white tracking-tighter">RecruitAI</span>
-      </div>
+      <Link href="/" className="flex items-center gap-2">
+        <span className="material-symbols-outlined text-[#adc6ff]">
+          clinical_notes
+        </span>
+
+        <span className="text-2xl font-bold text-white tracking-tighter">
+          RecruitAI
+        </span>
+      </Link>
 
       {/* Desktop Nav */}
       <nav className="hidden md:flex items-center gap-10">
-        {["Dashboard", "Resumes", "Uploads", "Settings"].map((item, i) => (
-          <a
-            key={item}
-            href="#"
-            className={`text-[13px] font-medium tracking-wide transition-colors duration-200 ${
-              i === 0
-                ? "text-[#adc6ff]"
-                : "text-[#c2c6d6] hover:text-[#adc6ff]"
-            }`}
-          >
-            {item}
-          </a>
-        ))}
+
+        <Link
+          href="/dashboard"
+          className="text-[13px] font-medium tracking-wide text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          href="/resumes"
+          className="text-[13px] font-medium tracking-wide text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Resumes
+        </Link>
+
+        <Link
+          href="/upload"
+          className="text-[13px] font-medium tracking-wide text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Uploads
+        </Link>
+
+        <span
+          className="text-[13px] font-medium tracking-wide text-[#8c909f] cursor-not-allowed"
+          title="Settings page coming soon"
+        >
+          Settings
+        </span>
+
       </nav>
 
       {/* Avatar */}
@@ -45,9 +68,11 @@ function TopAppBar() {
           className="w-full h-full object-cover"
         />
       </div>
+
     </header>
   );
 }
+
 
 function HeroSection({
   file,
@@ -281,29 +306,58 @@ function Footer() {
 
 function BottomNavBar() {
   const items = [
-    { icon: "home", label: "Home", active: true },
-    { icon: "history", label: "History", active: false },
-    { icon: "add_circle", label: "Upload", active: false },
-    { icon: "account_circle", label: "Profile", active: false },
+    {
+      icon: "home",
+      label: "Home",
+      href: "/",
+      active: true,
+    },
+    {
+      icon: "history",
+      label: "History",
+      href: "/resumes",
+      active: false,
+    },
+    {
+      icon: "add_circle",
+      label: "Upload",
+      href: "/upload",
+      active: false,
+    },
+    {
+      icon: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard",
+      active: false,
+    },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-[#111318]/90 backdrop-blur-lg border-t border-[#424754] rounded-t-[0.75rem] shadow-[0px_-8px_32px_rgba(0,0,0,0.8)]">
-      {items.map(({ icon, label, active }) => (
-        <div
+      
+      {items.map(({ icon, label, href, active }) => (
+        <Link
           key={label}
-          className={`flex flex-col items-center active:scale-90 transition-all cursor-pointer ${
-            active ? "text-[#adc6ff]" : "text-[#c2c6d6] hover:text-white"
+          href={href}
+          className={`flex flex-col items-center active:scale-90 transition-all ${
+            active
+              ? "text-[#adc6ff]"
+              : "text-[#c2c6d6] hover:text-white"
           }`}
         >
-          <span className="material-symbols-outlined">{icon}</span>
-          <span className="text-[13px] font-medium">{label}</span>
-        </div>
+          <span className="material-symbols-outlined">
+            {icon}
+          </span>
+
+          <span className="text-[13px] font-medium">
+            {label}
+          </span>
+        </Link>
       ))}
+
     </nav>
   );
 }
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {

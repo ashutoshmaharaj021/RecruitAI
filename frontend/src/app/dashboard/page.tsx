@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 interface Candidate {
   id: number;
@@ -15,6 +16,37 @@ interface Stat {
   label: string;
   value: string;
   sub: React.ReactNode;
+}
+
+function StatCard({ stat }: { stat: Stat }) {
+  return (
+    <div className="glass-card rounded-xl p-6">
+      <p className="text-[13px] text-[#8c909f] uppercase tracking-widest">
+        {stat.label}
+      </p>
+
+      <p className="text-[32px] font-semibold text-white mt-3">{stat.value}</p>
+
+      <div className="mt-3">{stat.sub}</div>
+    </div>
+  );
+}
+function SkillBadge({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: string;
+}) {
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-[13px] font-medium ${
+        SKILL_STYLES[variant] ?? SKILL_STYLES.primary
+      }`}
+    >
+      {label}
+    </span>
+  );
 }
 
 const STATS: Stat[] = [
@@ -125,45 +157,59 @@ function TopNav() {
   return (
     <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
       {/* Logo */}
-      <div className="flex items-center gap-1">
+      <Link href="/" className="flex items-center gap-1">
         <span className="material-symbols-outlined text-[#adc6ff]">
           clinical_notes
         </span>
+
         <span className="text-2xl font-bold text-white tracking-tighter">
           RecruitAI
         </span>
-      </div>
+      </Link>
 
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-10">
-        {[
-          { label: "Dashboard", active: true },
-          { label: "Resumes", active: false },
-          { label: "Uploads", active: false },
-          { label: "Settings", active: false },
-        ].map(({ label, active }) => (
-          <a
-            key={label}
-            href="#"
-            className={`text-[15px] transition-colors duration-200 ${
-              active
-                ? "text-[#adc6ff] font-medium"
-                : "text-[#c2c6d6] hover:text-[#adc6ff]"
-            }`}
-          >
-            {label}
-          </a>
-        ))}
+        <Link
+          href="/dashboard"
+          className="text-[15px] text-[#adc6ff] font-medium transition-colors duration-200"
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          href="/resumes"
+          className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Resumes
+        </Link>
+
+        <Link
+          href="/upload"
+          className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+        >
+          Uploads
+        </Link>
+
+        <span
+          className="text-[15px] text-[#8c909f] cursor-not-allowed"
+          title="Settings page coming soon"
+        >
+          Settings
+        </span>
       </div>
 
       {/* Right actions */}
       <div className="flex items-center gap-4">
-        <button className="hidden md:flex items-center gap-1 bg-[#adc6ff] text-[#002e6a] px-4 py-2 rounded-xl text-[13px] font-medium active:scale-95 transition-transform glow-button">
+        <Link
+          href="/upload"
+          className="hidden md:flex items-center gap-1 bg-[#adc6ff] text-[#002e6a] px-4 py-2 rounded-xl text-[13px] font-medium active:scale-95 transition-transform glow-button"
+        >
           <span className="material-symbols-outlined text-[18px]">
             cloud_upload
           </span>
           Quick Upload
-        </button>
+        </Link>
+
         <div className="w-8 h-8 rounded-full overflow-hidden border border-[#424754]">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj4sgkLtVeNsAhlNNCtZ4ic-6UoNmL6gs3sK0aiqmdCOiHhRAZiWsv1vrAi_IvMEAClFHLOqpcZCFo-e7fwmQVqPrDj-ufIzLfUtjL4pGdZT_F9f9eGRTMDJO6PmSIeO4m0bbUgl2Drfucj4mbjyFmm9ChNBGIDQUXgO1zKxx1Mu6KgJ9Rjkghjf3wOK5UQivnpi3hQbriJe_e20lI29zqBMemwO4lOuhmyO0mRjqoA7D1Mi2im08-GqodnHaGcm6Mzm3VxqVRLqY"
@@ -178,54 +224,66 @@ function TopNav() {
 
 function Sidebar() {
   const items = [
-    { icon: "dashboard", label: "Dashboard", active: true },
-    { icon: "description", label: "Resumes", active: false },
-    { icon: "cloud_upload", label: "Uploads", active: false },
-    { icon: "settings", label: "Settings", active: false },
+    {
+      icon: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard",
+      active: true,
+    },
+    {
+      icon: "description",
+      label: "Resumes",
+      href: "/resumes",
+      active: false,
+    },
+    {
+      icon: "cloud_upload",
+      label: "Uploads",
+      href: "/upload",
+      active: false,
+    },
+    {
+      icon: "settings",
+      label: "Settings",
+      href: "#",
+      active: false,
+    },
   ];
 
   return (
     <aside className="hidden md:flex flex-col gap-1 w-[240px] fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#0c0e12] border-r border-[#424754] px-4 pt-6 z-40">
-      {items.map(({ icon, label, active }) => (
-        <div
-          key={label}
-          className={`flex items-center gap-3 px-4 py-2 rounded-xl cursor-pointer transition-all active:opacity-80 ${
-            active
-              ? "bg-[#4d8eff]/10 text-[#adc6ff]"
-              : "text-[#c2c6d6] hover:bg-[#333539]/50 hover:text-white"
-          }`}
-        >
-          <span className="material-symbols-outlined">{icon}</span>
-          <span className="text-[15px]">{label}</span>
-        </div>
-      ))}
+      {items.map(({ icon, label, href, active }) => {
+        if (label === "Settings") {
+          return (
+            <div
+              key={label}
+              title="Settings page coming soon"
+              className="flex items-center gap-3 px-4 py-2 rounded-xl text-[#8c909f] cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined">{icon}</span>
+
+              <span className="text-[15px]">{label}</span>
+            </div>
+          );
+        }
+
+        return (
+          <Link
+            key={label}
+            href={href}
+            className={`flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${
+              active
+                ? "bg-[#4d8eff]/10 text-[#adc6ff]"
+                : "text-[#c2c6d6] hover:bg-[#333539]/50 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined">{icon}</span>
+
+            <span className="text-[15px]">{label}</span>
+          </Link>
+        );
+      })}
     </aside>
-  );
-}
-
-function StatCard({ stat }: { stat: Stat }) {
-  return (
-    <div className="glass-card gradient-border p-6 flex flex-col justify-between rounded-xl">
-      <div>
-        <p className="text-[13px] font-medium text-[#c2c6d6] uppercase tracking-widest">
-          {stat.label}
-        </p>
-        <h2 className="text-[32px] font-semibold tracking-[-0.02em] text-white mt-1">
-          {stat.value}
-        </h2>
-      </div>
-      <div className="mt-4">{stat.sub}</div>
-    </div>
-  );
-}
-
-function SkillBadge({ label, variant }: { label: string; variant: string }) {
-  return (
-    <span
-      className={`px-3 py-1 rounded-full text-[13px] font-medium ${SKILL_STYLES[variant] ?? SKILL_STYLES.primary}`}
-    >
-      {label}
-    </span>
   );
 }
 
@@ -546,9 +604,12 @@ export default function DashboardPage() {
                 </p>
               </div>
               {/* Mobile add button */}
-              <button className="md:hidden flex items-center justify-center p-4 bg-[#4d8eff] text-[#00285d] rounded-full active:scale-90 transition-all">
+              <Link
+                href="/upload"
+                className="md:hidden flex items-center justify-center p-4 bg-[#4d8eff] text-[#00285d] rounded-full active:scale-90 transition-all"
+              >
                 <span className="material-symbols-outlined">add</span>
-              </button>
+              </Link>
             </div>
 
             {/* Candidate list */}
@@ -598,7 +659,7 @@ export default function DashboardPage() {
             <DropZone />
           </div>
         </main>
-  
+
         <Footer />
         <MobileBottomNav />
       </div>
