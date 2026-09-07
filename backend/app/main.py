@@ -5,7 +5,7 @@ from app.database.db import engine, Base
 from app.models.resume_model import Resume
 
 from fastapi.middleware.cors import CORSMiddleware
-
+     
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)

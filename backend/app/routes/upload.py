@@ -1,10 +1,14 @@
-from app.database.db import SessionLocal
+from app.database.db import SessionLocal, get_db
 from app.models.resume_model import Resume
+from app.database import db
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Depends
 import fitz
 import os
+
+from fastapi import APIRouter, UploadFile, File
 
 from app.parsers.resume_parser import parse_resume
 
@@ -82,10 +86,7 @@ def get_resume(resume_id: int):
         resume = db.query(Resume).filter(Resume.id == resume_id).first()
 
         if not resume:
-            raise HTTPException(
-                status_code=404,
-                detail="Resume not found"
-            )
+            raise HTTPException(status_code=404, detail="Resume not found")
 
         return {
             "id": resume.id,
@@ -98,3 +99,18 @@ def get_resume(resume_id: int):
 
     finally:
         db.close()
+
+@router.delete("/resumes/{resume_id}")
+def delete_resume(resume_id: int, db: Session = Depends(get_db)):
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    db.delete(resume)
+    db.commit()
+
+    return {
+        "message": "Resume deleted successfully",
+        "resume_id": resume_id
+        }
