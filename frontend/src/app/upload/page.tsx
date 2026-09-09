@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import axios from "axios";
+import {useRouter} from "next/navigation";
 // TODO: import axios from "axios";
 // TODO: import { useRouter } from "next/navigation";
 
@@ -464,7 +466,7 @@ function Footer() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UploadPage() {
-  // const router = useRouter(); // TODO: uncomment for redirect after parse
+  const router = useRouter(); 
 
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [progress, setProgress]       = useState(0);
@@ -475,51 +477,69 @@ export default function UploadPage() {
   const intervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Simulated upload progress (replace body with real axios call) ──
-  const startUpload = useCallback((file: File) => {
-    setSelectedFile(file);
-    setUploadState("uploading");
-    setProgress(0);
-    setStatusLabel(ANALYSIS_STEPS[0].label);
+  const startUpload = useCallback(async (file: File) => {
+  setSelectedFile(file);
+  setUploadState("uploading");
+  setProgress(0);
+  setStatusLabel("Uploading Resume...");
 
-    // TODO: Replace simulation below with actual API call:
-    //
-    // const formData = new FormData();
-    // formData.append("file", file);
-    // try {
-    //   const response = await axios.post("http://127.0.0.1:8000/upload", formData, {
-    //     onUploadProgress: (evt) => {
-    //       const pct = Math.round((evt.loaded * 100) / (evt.total ?? 1));
-    //       setProgress(pct);
-    //       setStatusLabel(getStatusLabel(pct));
-    //     },
-    //   });
-    //   setUploadState("success");
-    //   setTimeout(() => router.push(`/resumes/${response.data.id}`), 1500);
-    // } catch {
-    //   setUploadState("error");
-    // }
+  const formData = new FormData();
+  formData.append("file", file);
 
-    let current = 0;
-    intervalRef.current = setInterval(() => {
-      current += Math.floor(Math.random() * 8) + 2;
-      if (current >= 100) {
-        current = 100;
-        clearInterval(intervalRef.current!);
-        setProgress(100);
-        setStatusLabel("Analysis Complete");
-        setUploadState("success");
-        // TODO: router.push(`/resumes/${parsedId}`) after real API
-        setTimeout(() => {
-          setUploadState("idle");
-          setProgress(0);
-          setSelectedFile(null);
-        }, 2000);
-        return;
+  try {
+    const response = await axios.post(
+      "http://127.0.0.1:8000/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+
+        onUploadProgress: (event) => {
+          if (event.total) {
+            const uploadProgress = Math.round(
+              (event.loaded * 100) / event.total
+            );
+
+            // Keep some room for backend parsing
+            const displayProgress = Math.min(
+              Math.round(uploadProgress * 0.7),
+              70
+            );
+
+            setProgress(displayProgress);
+            setStatusLabel(getStatusLabel(displayProgress));
+          }
+        },
       }
-      setProgress(current);
-      setStatusLabel(getStatusLabel(current));
-    }, 200);
-  }, []);
+    );
+
+    console.log("Upload response:", response.data);
+
+    // Backend request succeeded
+    setProgress(100);
+    setStatusLabel("Analysis Complete");
+    setUploadState("success");
+
+    // Backend should return the created resume ID
+    const parsedId = response.data.id;
+
+    setTimeout(() => {
+      if (parsedId) {
+        router.push(`/resumes/${parsedId}`);
+      } else {
+        router.push("/resumes");
+      }
+    }, 1000);
+
+  } catch (error) {
+    console.error("Upload failed:", error);
+
+    setUploadState("error");
+    setProgress(0);
+    setStatusLabel("Upload Failed");
+  }
+}, [router]); 
 
   const handleFileDrop = useCallback(
     (file: File) => startUpload(file),
