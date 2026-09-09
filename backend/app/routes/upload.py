@@ -37,6 +37,7 @@ async def upload_resume(file: UploadFile = File(...)):
 
     # Parse resume
     parsed_data = parse_resume(text)
+    
 
     db = SessionLocal()
     resume = Resume(name=parsed_data["name"],
