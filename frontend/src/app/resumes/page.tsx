@@ -95,7 +95,7 @@ export default function ResumesPage() {
     });
   }, [resumes, searchQuery, selectedSkill]);
 
-  const handleDelete = async (resumeId: number) => {
+  const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this resume?",
     );
@@ -103,18 +103,15 @@ export default function ResumesPage() {
     if (!confirmed) return;
 
     try {
-      setDeletingId(resumeId);
+      await axios.delete(`http://127.0.0.1:8000/resumes/${id}`);
 
-      await axios.delete(`http://127.0.0.1:8000/resumes/${resumeId}`);
-
+      // Remove the deleted resume immediately from the UI
       setResumes((currentResumes) =>
-        currentResumes.filter((resume) => resume.id !== resumeId),
+        currentResumes.filter((resume) => resume.id !== id),
       );
-    } catch (err) {
-      console.error("Failed to delete resume:", err);
-      window.alert("Unable to delete the resume. Please try again.");
-    } finally {
-      setDeletingId(null);
+    } catch (error) {
+      console.error("Failed to delete resume:", error);
+      alert("Failed to delete resume. Please try again.");
     }
   };
 
