@@ -214,56 +214,6 @@ Both servers must be running simultaneously for the application to work end to e
 
 ---
 
-## Example API Response
-
-The following is an example only, based on the current `resumes` database schema. Actual field values will vary by resume.
-
-```json
-{
-  "id": 1,
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "phone": "+1-555-123-4567",
-  "skills": "Python, FastAPI, React, SQL",
-  "raw_text": "Full extracted resume text..."
-}
-```
-
----
-
-
-## Future Roadmap
-
-The following features are **not currently implemented** and are potential future additions:
-
-- Resume history
-- Resume search and filtering
-- Dashboard analytics
-- Resume detail page
-- ATS scoring
-- Job description vs. resume matching
-- Semantic search
-- Resume embeddings
-- Authentication
-- Cloud deployment
-- More robust resume parsing
-- Support for additional document formats
-
----
-
-## Known Limitations
-
-- No authentication is currently implemented
-- No cloud deployment is currently implemented
-- No advanced AI/LLM functionality (e.g., OpenAI API, HuggingFace Transformers, LayoutLM) is currently implemented
-- No Elasticsearch, Redis, Celery, or pgvector integration currently exists
-- No AWS S3 or other cloud storage is currently used
-- No Clerk, Auth.js, Docker, or Kubernetes is currently used
-- Parsing accuracy depends on resume formatting and structure
-- The Resumes page is still under development
-
----
-
 ## Contributing
 
 This project is currently developed as a personal portfolio/academic project. Contribution guidelines will be added if the project opens up to external contributions in the future.
@@ -272,7 +222,7 @@ This project is currently developed as a personal portfolio/academic project. Co
 
 ## License
 
-<!-- Add license information here -->
+Licensed under the MIT License
 
 ---
 
