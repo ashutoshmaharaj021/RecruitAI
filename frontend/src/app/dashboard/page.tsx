@@ -31,13 +31,7 @@ function StatCard({ stat }: { stat: Stat }) {
     </div>
   );
 }
-function SkillBadge({
-  label,
-  variant,
-}: {
-  label: string;
-  variant: string;
-}) {
+function SkillBadge({ label, variant }: { label: string; variant: string }) {
   return (
     <span
       className={`px-3 py-1 rounded-full text-[13px] font-medium ${
@@ -305,7 +299,7 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
         </div>
 
         <div>
-          <h3 className="text-[24px] font-medium text-white group-hover:text-[#adc6ff] transition-colors leading-tight">
+          <h3 className="text-[16px] font-medium text-white group-hover:text-[#adc6ff] transition-colors leading-tight">
             {candidate.name || "Unknown Candidate"}
           </h3>
 
@@ -496,9 +490,32 @@ export default function DashboardPage() {
 
   const totalParsed = resumes.length;
 
+  // Collect all skills from all resumes
+  const allSkills = resumes.flatMap((resume) => getSkills(resume.skills));
+
+  // Count how many resumes contain each skill
+  const skillCounts: Record<string, number> = {};
+
+  allSkills.forEach((skill) => {
+    const normalizedSkill = skill.toLowerCase();
+
+    skillCounts[normalizedSkill] = (skillCounts[normalizedSkill] || 0) + 1;
+  });
+
+  // Find the most common skill
+  const mostCommonSkill =
+    Object.entries(skillCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+  // Number of different skills detected
+  const uniqueSkills = Object.keys(skillCounts).length;
+
+  // Average number of skills per resume
+  const averageSkills =
+    totalParsed > 0 ? (allSkills.length / totalParsed).toFixed(1) : "0";
+
   const STATS: Stat[] = [
     {
-      label: "Total Parsed",
+      label: "Total Resumes",
       value: totalParsed.toString(),
       sub: (
         <div className="flex items-center gap-1 text-[#4edea3]">
@@ -508,27 +525,47 @@ export default function DashboardPage() {
         </div>
       ),
     },
+
     {
-      label: "Parser Status",
-      value: "Active",
+      label: "Unique Skills",
+      value: uniqueSkills.toString(),
       sub: (
-        <div className="flex items-center gap-1 text-[#4edea3]">
+        <div className="flex items-center gap-1 text-[#adc6ff]">
           <span className="material-symbols-outlined text-base">
-            check_circle
+            psychology
           </span>
 
-          <span className="text-[13px] font-medium">FastAPI connected</span>
+          <span className="text-[13px] font-medium">Skills detected</span>
         </div>
       ),
     },
+
     {
-      label: "Database",
-      value: "Online",
+      label: "Top Skill",
+      value: mostCommonSkill.charAt(0).toUpperCase() + mostCommonSkill.slice(1),
+      sub: (
+        <div className="flex items-center gap-1 text-[#ffb786]">
+          <span className="material-symbols-outlined text-base">
+            trending_up
+          </span>
+
+          <span className="text-[13px] font-medium">
+            {skillCounts[mostCommonSkill] || 0} resumes
+          </span>
+        </div>
+      ),
+    },
+
+    {
+      label: "Avg Skills / Resume",
+      value: averageSkills,
       sub: (
         <div className="flex items-center gap-1 text-[#4edea3]">
-          <span className="material-symbols-outlined text-base">storage</span>
+          <span className="material-symbols-outlined text-base">analytics</span>
 
-          <span className="text-[13px] font-medium">PostgreSQL</span>
+          <span className="text-[13px] font-medium">
+            Average detected skills
+          </span>
         </div>
       ),
     },
@@ -587,7 +624,7 @@ export default function DashboardPage() {
         <main className="md:ml-[240px] pt-24 pb-16 px-8 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-10">
             {/* Stats */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {STATS.map((stat) => (
                 <StatCard key={stat.label} stat={stat} />
               ))}
