@@ -1,308 +1,643 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import Link from "next/link";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface ParsedResume {
-  [key: string]: unknown;
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Top Navigation ──────────────────────────────────────────────────────────
 
 function TopAppBar() {
   return (
-    <header className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] shadow-sm flex items-center justify-between px-8 h-16 z-50">
-      
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-[#adc6ff]">
-          clinical_notes
-        </span>
+    <header className="fixed top-0 left-0 w-full h-16 z-50 border-b border-[#252a35] bg-[#0b0e14]/80 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto h-full px-6 md:px-8 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-9 h-9 rounded-xl bg-[#4d8eff]/10 border border-[#4d8eff]/20 flex items-center justify-center group-hover:bg-[#4d8eff]/20 transition-colors">
+            <span className="material-symbols-outlined text-[#adc6ff]">
+              clinical_notes
+            </span>
+          </div>
 
-        <span className="text-2xl font-bold text-white tracking-tighter">
-          RecruitAI
-        </span>
-      </Link>
-
-      {/* Desktop Nav */}
-      <nav className="hidden md:flex items-center gap-10">
-
-        <Link
-          href="/dashboard"
-          className="text-[13px] font-medium tracking-wide text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
-        >
-          Dashboard
+          <span className="text-xl md:text-2xl font-bold tracking-tight text-white">
+            Recruit<span className="text-[#adc6ff]">AI</span>
+          </span>
         </Link>
 
-        <Link
-          href="/resumes"
-          className="text-[13px] font-medium tracking-wide text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
-        >
-          Resumes
-        </Link>
+        {/* Desktop navigation */}
+        <nav className="hidden md:flex items-center gap-8">
+          <Link
+            href="/dashboard"
+            className="text-sm text-[#a9afbf] hover:text-white transition-colors"
+          >
+            Dashboard
+          </Link>
 
+          <Link
+            href="/resumes"
+            className="text-sm text-[#a9afbf] hover:text-white transition-colors"
+          >
+            Resumes
+          </Link>
+
+          <Link
+            href="/upload"
+            className="text-sm text-[#a9afbf] hover:text-white transition-colors"
+          >
+            Upload
+          </Link>
+
+          <span
+            className="text-sm text-[#555d6d] cursor-not-allowed"
+            title="Settings page coming soon"
+          >
+            Settings
+          </span>
+        </nav>
+
+        {/* CTA */}
         <Link
           href="/upload"
-          className="text-[13px] font-medium tracking-wide text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
+          className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[#adc6ff] text-[#07172f] text-sm font-semibold hover:bg-white transition-colors"
         >
-          Uploads
+          Upload Resume
+
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_forward
+          </span>
         </Link>
-
-        <span
-          className="text-[13px] font-medium tracking-wide text-[#8c909f] cursor-not-allowed"
-          title="Settings page coming soon"
-        >
-          Settings
-        </span>
-
-      </nav>
-
-      {/* Avatar */}
-      <div className="w-8 h-8 rounded-full bg-[#282a2e] border border-[#424754] flex items-center justify-center overflow-hidden">
-        <img
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzxGkMDzv2UBmB3CA3xNVWbBUpDC8iVr1iURPcwl5GAVRy5vwcGOj4-jwCztJzP2pEoBTdzzCP2rLRzD7EW4WDy8XeRMbXFq86b2zxfYuUFi_eC6TtZK21J2rg284asTyOEVH04-D9VB8v3R20MubZqJDQy3jojfOPOOKe8en-XHTLTrBrT5qMIp2j5MFrNzFLBGLYb3b4rKHKRq7AqzNcwxzxZI57o5QoMzFtRofuBPOrsTq4KJT4d4cVYEuG1SA0tZdWY4RN30E"
-          alt="User profile"
-          className="w-full h-full object-cover"
-        />
       </div>
-
     </header>
   );
 }
 
+// ─── Hero Section ─────────────────────────────────────────────────────────────
 
-function HeroSection({
-  file,
-  setFile,
-  loading,
-  result,
-  onUpload,
-}: {
-  file: File | null;
-  setFile: (f: File | null) => void;
-  loading: boolean;
-  result: ParsedResume | null;
-  onUpload: () => void;
-}) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped) setFile(dropped);
-  };
-
+function HeroSection() {
   return (
-    <section className="relative px-8 py-24 flex flex-col items-center text-center justify-center min-h-[795px]">
-      {/* Background glow */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#adc6ff]/5 rounded-full blur-[120px]" />
+    <section className="relative min-h-screen flex items-center px-6 pt-24 pb-20 overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-180px] left-1/2 -translate-x-1/2 w-[850px] h-[650px] rounded-full bg-[#4d8eff]/10 blur-[150px]" />
+
+        <div className="absolute bottom-[-200px] right-[-150px] w-[500px] h-[500px] rounded-full bg-[#4edea3]/5 blur-[130px]" />
+
+        <div className="absolute inset-0 opacity-[0.035] bg-grid-pattern" />
       </div>
 
-      <div className="relative z-10 max-w-4xl">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 glass-card rounded-full border border-[#424754] animate-pulse">
-          <span className="w-2 h-2 rounded-full bg-[#4edea3]" />
-          <span className="text-[13px] font-medium text-[#4edea3]">v2.0 Now Live</span>
-        </div>
+      <div className="relative max-w-7xl mx-auto w-full">
+        <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
+          {/* ─── Left side ─── */}
+          <div>
+            {/* Status badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#4edea3]/20 bg-[#4edea3]/5 mb-7">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[#4edea3] opacity-60 animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4edea3]" />
+              </span>
 
-        {/* Headline */}
-        <h1 className="text-[48px] leading-none font-semibold tracking-[-0.03em] mb-6 text-white">
-          The Future of <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#adc6ff] via-[#4d8eff] to-[#4edea3]">
-            Talent Acquisition.
-          </span>
-        </h1>
-
-        <p className="text-[18px] leading-relaxed text-[#c2c6d6] max-w-2xl mx-auto mb-10">
-          AI-powered resume parsing with precision intelligence. Discover top-tier candidates before
-          your competition does, with zero bias and maximum speed.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <button
-            onClick={onUpload}
-            disabled={loading || !file}
-            className="glow-button px-10 py-4 bg-[#4d8eff] text-[#00285d] rounded-xl text-[24px] font-semibold active:scale-95 transition-all hover:brightness-110 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Parsing…" : "Get Started"}
-            <span className="material-symbols-outlined">arrow_forward</span>
-          </button>
-          <button className="px-10 py-4 border border-[#424754] bg-transparent text-white rounded-xl text-[24px] font-semibold hover:bg-[#333539]/20 transition-all">
-            View Demo
-          </button>
-        </div>
-
-        {/* Upload result badge */}
-        {result && (
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full border border-[#4edea3]/30 text-[#4edea3] text-[13px]">
-            <span className="material-symbols-outlined text-base">check_circle</span>
-            Resume parsed successfully!
-          </div>
-        )}
-      </div>
-
-      {/* Dashboard Preview */}
-      <div className="mt-16 relative w-full max-w-6xl mx-auto glass-card rounded-xl overflow-hidden shadow-2xl border-t border-l border-white/10">
-        <div className="h-10 bg-[#1e2024] flex items-center px-6 gap-1 border-b border-[#424754]">
-          <div className="w-3 h-3 rounded-full bg-[#ffb4ab]/20 border border-[#ffb4ab]/40" />
-          <div className="w-3 h-3 rounded-full bg-[#ffb786]/20 border border-[#ffb786]/40" />
-          <div className="w-3 h-3 rounded-full bg-[#4edea3]/20 border border-[#4edea3]/40" />
-        </div>
-        <div className="p-4 bg-[#0c0e12]">
-          {/* Drag & Drop zone (interactive, inside preview) */}
-          <div
-            className={`marching-ants rounded-xl p-10 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all ${
-              dragging ? "bg-[#1a1c20]/70" : "bg-[#1a1c20]/30 hover:bg-[#1a1c20]/50"
-            }`}
-            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <span className="material-symbols-outlined text-[#8c909f] text-[48px]">cloud_upload</span>
-            <div className="text-center">
-              <p className="text-[24px] font-medium text-white">
-                {file ? file.name : "Drag & Drop Resumes"}
-              </p>
-              <p className="text-[15px] text-[#c2c6d6]">
-                {file ? `${(file.size / 1024).toFixed(1)} KB — ready to parse` : "Support for PDF, DOCX, and LinkedIn Profiles"}
-              </p>
+              <span className="text-xs font-medium text-[#4edea3]">
+                Resume Intelligence Platform
+              </span>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx"
-              className="hidden"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+
+            {/* Main heading */}
+            <h1 className="text-5xl md:text-6xl xl:text-7xl font-semibold tracking-[-0.05em] leading-[0.98] text-white">
+              From resumes
+              <span className="block mt-2">
+                to{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#adc6ff] via-[#4d8eff] to-[#4edea3]">
+                  intelligence.
+                </span>
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className="mt-7 max-w-xl text-base md:text-lg leading-relaxed text-[#a9afbf]">
+              RecruitAI transforms unstructured resumes into structured
+              candidate information — extracting essential details and
+              technical skills so they can be searched, managed, and analyzed.
+            </p>
+
+            {/* CTA buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-9">
+              <Link
+                href="/upload"
+                className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#adc6ff] text-[#07172f] font-semibold hover:bg-white transition-all shadow-[0_0_30px_rgba(77,142,255,0.12)]"
+              >
+                Start Parsing
+
+                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
+                  arrow_forward
+                </span>
+              </Link>
+
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[#343b49] bg-[#11151d]/70 text-white font-medium hover:bg-[#191e28] transition-colors"
+              >
+                View Dashboard
+
+                <span className="material-symbols-outlined text-[20px]">
+                  dashboard
+                </span>
+              </Link>
+            </div>
+
+            {/* Capabilities */}
+            <div className="flex flex-wrap gap-x-6 gap-y-3 mt-8">
+              <Capability icon="picture_as_pdf" text="PDF parsing" />
+
+              <Capability icon="person_search" text="Candidate extraction" />
+
+              <Capability icon="database" text="PostgreSQL storage" />
+            </div>
+          </div>
+
+          {/* ─── Right side ─── */}
+          <ProcessingVisualization />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Capability ──────────────────────────────────────────────────────────────
+
+function Capability({
+  icon,
+  text,
+}: {
+  icon: string;
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-[#8e95a5]">
+      <span className="material-symbols-outlined text-[17px] text-[#4edea3]">
+        check_circle
+      </span>
+
+      {text}
+    </div>
+  );
+}
+
+// ─── Processing Visualization ────────────────────────────────────────────────
+
+function ProcessingVisualization() {
+  return (
+    <div className="relative w-full max-w-xl mx-auto lg:ml-auto">
+      {/* Outer glow */}
+      <div className="absolute inset-10 rounded-full bg-[#4d8eff]/10 blur-[100px]" />
+
+      {/* Main visual container */}
+      <div className="relative rounded-3xl border border-[#293140] bg-[#0d1118]/90 backdrop-blur-xl shadow-[0_30px_100px_rgba(0,0,0,0.4)] overflow-hidden">
+        {/* Header */}
+        <div className="h-12 px-5 flex items-center justify-between border-b border-[#252a35] bg-[#11151d]">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#adc6ff] text-[18px]">
+              auto_awesome
+            </span>
+
+            <span className="text-xs font-medium text-[#c5cad6]">
+              RecruitAI Engine
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3]" />
+
+            <span className="text-[10px] uppercase tracking-wider text-[#737b8c]">
+              Ready
+            </span>
+          </div>
+        </div>
+
+        {/* Visualization */}
+        <div className="p-6 md:p-8">
+          {/* Intro */}
+          <div className="mb-7">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#737b8c]">
+              Intelligent processing pipeline
+            </p>
+
+            <p className="text-sm text-[#c5cad6] mt-2">
+              A structured workflow for turning resume documents into
+              candidate data.
+            </p>
+          </div>
+
+          {/* Pipeline */}
+          <div className="space-y-3">
+            <PipelineCard
+              number="01"
+              icon="description"
+              title="Resume Document"
+              description="Input document"
+              status="INPUT"
+              accent="blue"
+            />
+
+            <PipelineConnector />
+
+            <PipelineCard
+              number="02"
+              icon="text_snippet"
+              title="Text Extraction"
+              description="Document content"
+              status="EXTRACT"
+              accent="green"
+            />
+
+            <PipelineConnector />
+
+            <PipelineCard
+              number="03"
+              icon="psychology"
+              title="Information Parsing"
+              description="Candidate attributes"
+              status="PARSE"
+              accent="orange"
+            />
+
+            <PipelineConnector />
+
+            <PipelineCard
+              number="04"
+              icon="database"
+              title="Structured Storage"
+              description="PostgreSQL database"
+              status="STORE"
+              accent="blue"
             />
           </div>
 
-          {/* Parsed result preview */}
-          {result && (
-            <div className="mt-4 p-4 rounded-xl bg-[#1e2024] border border-[#424754] text-left overflow-auto max-h-64">
-              <p className="text-[13px] font-medium text-[#4edea3] mb-2">Parsed Output</p>
-              <pre className="text-[13px] text-[#c2c6d6] whitespace-pre-wrap break-words">
-                {JSON.stringify(result, null, 2)}
-              </pre>
+          {/* Bottom status */}
+          <div className="mt-6 p-4 rounded-xl border border-[#252a35] bg-[#11151d]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#4edea3] text-[18px]">
+                  verified
+                </span>
+
+                <span className="text-xs text-[#c5cad6]">
+                  Structured candidate data
+                </span>
+              </div>
+
+              <span className="text-[10px] uppercase tracking-wider text-[#4edea3]">
+                Ready
+              </span>
             </div>
-          )}
+
+            <div className="mt-3 h-1 rounded-full bg-[#202631] overflow-hidden">
+              <div className="h-full w-full rounded-full bg-gradient-to-r from-[#4d8eff] to-[#4edea3]" />
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
-function FeaturesGrid() {
+// ─── Pipeline Card ────────────────────────────────────────────────────────────
+
+function PipelineCard({
+  number,
+  icon,
+  title,
+  description,
+  status,
+  accent,
+}: {
+  number: string;
+  icon: string;
+  title: string;
+  description: string;
+  status: string;
+  accent: "blue" | "green" | "orange";
+}) {
+  const accentStyles = {
+    blue: {
+      icon: "text-[#adc6ff]",
+      background: "bg-[#4d8eff]/10",
+      border: "border-[#4d8eff]/20",
+      status: "text-[#adc6ff]",
+    },
+    green: {
+      icon: "text-[#4edea3]",
+      background: "bg-[#4edea3]/10",
+      border: "border-[#4edea3]/20",
+      status: "text-[#4edea3]",
+    },
+    orange: {
+      icon: "text-[#ffb786]",
+      background: "bg-[#ffb786]/10",
+      border: "border-[#ffb786]/20",
+      status: "text-[#ffb786]",
+    },
+  };
+
+  const style = accentStyles[accent];
+
+  return (
+    <div className="group flex items-center gap-4 p-4 rounded-xl border border-[#252a35] bg-[#11151d]/80 hover:border-[#3b4658] transition-all">
+      {/* Number */}
+      <span className="hidden sm:block text-[10px] font-mono text-[#555d6d] w-5">
+        {number}
+      </span>
+
+      {/* Icon */}
+      <div
+        className={`w-10 h-10 shrink-0 rounded-xl ${style.background} border ${style.border} flex items-center justify-center`}
+      >
+        <span className={`material-symbols-outlined ${style.icon}`}>
+          {icon}
+        </span>
+      </div>
+
+      {/* Text */}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-white">{title}</p>
+
+        <p className="text-xs text-[#737b8c] mt-1">{description}</p>
+      </div>
+
+      {/* Status */}
+      <span
+        className={`hidden sm:block text-[9px] font-medium tracking-widest ${style.status}`}
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
+
+// ─── Pipeline Connector ──────────────────────────────────────────────────────
+
+function PipelineConnector() {
+  return (
+    <div className="flex justify-center h-4">
+      <div className="w-px h-full bg-gradient-to-b from-[#343b49] to-[#4d8eff]/40" />
+    </div>
+  );
+}
+
+// ─── Features ─────────────────────────────────────────────────────────────────
+
+function FeaturesSection() {
   const features = [
     {
-      icon: "bolt",
-      color: "text-[#adc6ff]",
-      title: "Instant Ingestion",
-      desc: "Process 10,000+ resumes in under 4 minutes with multi-threaded parsing.",
-      span: "md:col-span-4",
+      icon: "picture_as_pdf",
+      title: "PDF Resume Parsing",
+      description:
+        "Extract text from uploaded PDF resumes and prepare the content for structured processing.",
     },
     {
-      icon: "security",
-      color: "text-[#4edea3]",
-      title: "Bias Elimination",
-      desc: "Anonymize candidate data automatically to ensure fair hiring practices.",
-      span: "md:col-span-4",
+      icon: "person_search",
+      title: "Candidate Extraction",
+      description:
+        "Identify candidate names, email addresses, phone numbers, and relevant technical skills.",
+    },
+    {
+      icon: "database",
+      title: "Persistent Storage",
+      description:
+        "Store parsed candidate information in PostgreSQL so it can be retrieved and managed later.",
     },
   ];
 
   return (
-    <section className="px-8 py-24 max-w-7xl mx-auto">
-      <h2 className="text-[32px] font-semibold tracking-[-0.02em] mb-16 text-center text-white">
-        Engineered for Precision.
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Large feature card */}
-        <div className="md:col-span-8 glass-card p-10 rounded-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:opacity-20 transition-opacity">
-            <span className="material-symbols-outlined text-[120px] text-white">psychology</span>
-          </div>
-          <h3 className="text-[24px] font-medium text-[#adc6ff] mb-4">Neural Skill Mapping</h3>
-          <p className="text-[15px] text-[#c2c6d6] mb-6 max-w-md">
-            Our proprietary LLM analyzes multi-dimensional skill sets, identifying hidden talent
-            patterns that keyword-based parsers miss.
+    <section className="px-6 py-28 border-t border-[#252a35]">
+      <div className="max-w-7xl mx-auto">
+        <div className="max-w-2xl mb-14">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#4d8eff] font-medium">
+            Core capabilities
           </p>
-          <div className="flex gap-3">
-            <span className="px-4 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 text-[13px] font-medium">
-              99.8% Accuracy
-            </span>
-            <span className="px-4 py-1 rounded-full bg-[#adc6ff]/10 text-[#adc6ff] border border-[#adc6ff]/20 text-[13px] font-medium">
-              Low Latency
-            </span>
-          </div>
+
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mt-3">
+            Everything you need to organize resume data.
+          </h2>
+
+          <p className="text-[#8e95a5] mt-4 leading-relaxed">
+            RecruitAI brings document extraction, candidate parsing, and
+            database storage together in one streamlined workflow.
+          </p>
         </div>
 
-        {/* Smaller cards */}
-        {features.map(({ icon, color, title, desc, span }) => (
-          <div key={title} className={`${span} glass-card p-10 rounded-xl flex flex-col justify-between`}>
-            <span className={`material-symbols-outlined ${color} text-[40px]`}>{icon}</span>
-            <div>
-              <h3 className="text-[24px] font-medium text-white mt-6">{title}</h3>
-              <p className="text-[15px] text-[#c2c6d6]">{desc}</p>
+        <div className="grid md:grid-cols-3 gap-5">
+          {features.map((feature, index) => (
+            <div
+              key={feature.title}
+              className="glass-card rounded-2xl p-7 group hover:-translate-y-1 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-11 h-11 rounded-xl bg-[#4d8eff]/10 border border-[#4d8eff]/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[#adc6ff]">
+                    {feature.icon}
+                  </span>
+                </div>
+
+                <span className="text-[10px] font-mono text-[#4b5362]">
+                  0{index + 1}
+                </span>
+              </div>
+
+              <h3 className="text-lg font-medium text-white mt-6">
+                {feature.title}
+              </h3>
+
+              <p className="text-sm text-[#8e95a5] leading-relaxed mt-3">
+                {feature.description}
+              </p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function StatsSection() {
-  const stats = [
-    { value: "500k+", label: "Resumes Parsed" },
-    { value: "85%", label: "Time Saved" },
-    { value: "1.2ms", label: "Avg Response" },
-    { value: "24/7", label: "Global Support" },
+// ─── How It Works ────────────────────────────────────────────────────────────
+
+function HowItWorks() {
+  const steps = [
+    {
+      number: "01",
+      title: "Upload",
+      description:
+        "Select a resume and send it to the RecruitAI processing pipeline.",
+      icon: "cloud_upload",
+    },
+    {
+      number: "02",
+      title: "Extract",
+      description:
+        "Resume text is extracted from the uploaded PDF document.",
+      icon: "text_snippet",
+    },
+    {
+      number: "03",
+      title: "Parse",
+      description:
+        "Candidate details and relevant technical skills are identified.",
+      icon: "psychology",
+    },
+    {
+      number: "04",
+      title: "Store",
+      description:
+        "Structured candidate information is persisted in PostgreSQL.",
+      icon: "database",
+    },
   ];
 
   return (
-    <section className="bg-[#0c0e12] border-y border-[#424754] py-24">
-      <div className="max-w-7xl mx-auto px-8 grid grid-cols-2 md:grid-cols-4 gap-16">
-        {stats.map(({ value, label }) => (
-          <div key={label} className="text-center">
-            <p className="text-[48px] font-semibold tracking-[-0.03em] text-[#adc6ff]">{value}</p>
-            <p className="text-[13px] font-medium text-[#c2c6d6] uppercase tracking-widest mt-1">{label}</p>
-          </div>
-        ))}
+    <section className="px-6 py-28 bg-[#0b0e14] border-y border-[#252a35]">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#4edea3] font-medium">
+            Workflow
+          </p>
+
+          <h2 className="text-3xl md:text-4xl font-semibold text-white mt-3">
+            From document to structured data.
+          </h2>
+
+          <p className="text-[#8e95a5] mt-4">
+            A simple pipeline that turns an uploaded resume into manageable
+            candidate information.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-4 gap-5">
+          {steps.map((step, index) => (
+            <div key={step.number} className="relative">
+              <div className="glass-card rounded-2xl p-7 h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-mono text-[#4d8eff]">
+                    {step.number}
+                  </span>
+
+                  <span className="material-symbols-outlined text-[#adc6ff]">
+                    {step.icon}
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-medium text-white mt-8">
+                  {step.title}
+                </h3>
+
+                <p className="text-sm text-[#8e95a5] leading-relaxed mt-3">
+                  {step.description}
+                </p>
+              </div>
+
+              {index < steps.length - 1 && (
+                <span className="hidden md:block absolute top-1/2 -right-3 z-10 material-symbols-outlined text-[#424957]">
+                  arrow_forward
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
+
+// ─── CTA ─────────────────────────────────────────────────────────────────────
+
+function CTASection() {
+  return (
+    <section className="px-6 py-28">
+      <div className="max-w-5xl mx-auto relative overflow-hidden rounded-3xl border border-[#303747] bg-[#10151e] p-10 md:p-16 text-center">
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[300px] bg-[#4d8eff]/10 blur-[100px] rounded-full" />
+        </div>
+
+        <div className="relative">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-[#4d8eff]/10 border border-[#4d8eff]/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-[#adc6ff] text-[28px]">
+              clinical_notes
+            </span>
+          </div>
+
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-white mt-6">
+            Start building your candidate database.
+          </h2>
+
+          <p className="max-w-xl mx-auto text-[#8e95a5] mt-5 leading-relaxed">
+            Upload a resume and let RecruitAI transform the document into
+            structured candidate information.
+          </p>
+
+          <Link
+            href="/upload"
+            className="inline-flex items-center gap-2 mt-8 px-7 py-3.5 rounded-xl bg-[#adc6ff] text-[#07172f] font-semibold hover:bg-white transition-colors"
+          >
+            Upload Resume
+
+            <span className="material-symbols-outlined">
+              arrow_forward
+            </span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
 
 function Footer() {
   return (
-    <footer className="bg-[#111318] border-t border-[#424754] w-full py-24">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-8">
-        <div className="flex flex-col gap-4 mb-10 md:mb-0">
-          <span className="text-[24px] font-bold text-white tracking-tighter">RecruitAI</span>
-          <p className="text-[15px] text-[#c2c6d6]">© 2024 RecruitAI. Precision Intelligence.</p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-10">
-          {["Privacy", "Terms", "API Docs", "Contact"].map((link) => (
-            <a
-              key={link}
-              href="#"
-              className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
+    <footer className="border-t border-[#252a35] bg-[#090c11]">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-12">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#adc6ff]">
+              clinical_notes
+            </span>
+
+            <span className="text-lg font-semibold text-white">
+              RecruitAI
+            </span>
+          </div>
+
+          {/* Links */}
+          <div className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="text-sm text-[#737b8c] hover:text-white transition-colors"
             >
-              {link}
-            </a>
-          ))}
+              Dashboard
+            </Link>
+
+            <Link
+              href="/resumes"
+              className="text-sm text-[#737b8c] hover:text-white transition-colors"
+            >
+              Resumes
+            </Link>
+
+            <Link
+              href="/upload"
+              className="text-sm text-[#737b8c] hover:text-white transition-colors"
+            >
+              Upload
+            </Link>
+          </div>
+
+          <p className="text-xs text-[#737b8c]">
+            © 2026 RecruitAI
+          </p>
         </div>
       </div>
     </footer>
   );
 }
+
+// ─── Mobile Bottom Navigation ────────────────────────────────────────────────
 
 function BottomNavBar() {
   const items = [
@@ -333,133 +668,89 @@ function BottomNavBar() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-[#111318]/90 backdrop-blur-lg border-t border-[#424754] rounded-t-[0.75rem] shadow-[0px_-8px_32px_rgba(0,0,0,0.8)]">
-      
+    <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-[#111318]/95 backdrop-blur-lg border-t border-[#252a35]">
       {items.map(({ icon, label, href, active }) => (
         <Link
           key={label}
           href={href}
-          className={`flex flex-col items-center active:scale-90 transition-all ${
+          className={`flex flex-col items-center gap-1 transition-all ${
             active
               ? "text-[#adc6ff]"
-              : "text-[#c2c6d6] hover:text-white"
+              : "text-[#737b8c] hover:text-white"
           }`}
         >
-          <span className="material-symbols-outlined">
+          <span className="material-symbols-outlined text-[21px]">
             {icon}
           </span>
 
-          <span className="text-[13px] font-medium">
-            {label}
-          </span>
+          <span className="text-[11px] font-medium">{label}</span>
         </Link>
       ))}
-
     </nav>
   );
 }
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ParsedResume | null>(null);
-
-  // Parallax mesh gradient on mouse move
-  useEffect(() => {
-    const gradient = document.querySelector<HTMLElement>(".mesh-gradient");
-    if (!gradient) return;
-    const handler = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 10;
-      const y = (e.clientY / window.innerHeight) * 10;
-      gradient.style.backgroundPosition = `${x}% ${y}%`;
-    };
-    document.addEventListener("mousemove", handler);
-    return () => document.removeEventListener("mousemove", handler);
-  }, []);
-
-  const handleUpload = async () => {
-    if (!file) {
-      alert("Please select a resume");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      setLoading(true);
-      const response = await axios.post<ParsedResume>("http://127.0.0.1:8000/upload", formData);
-      setResult(response.data);
-    } catch (error) {
-      console.error("Upload failed:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
-      {/* Google Material Symbols font */}
+      {/* Material Symbols */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
 
       <style>{`
-        @import url('https://fonts.cdnfonts.com/css/geist');
-
-        body { font-family: 'Geist', sans-serif; background-color: #050505; }
+        body {
+          font-family: var(--font-geist-sans), sans-serif;
+          background: #090c11;
+        }
 
         .glass-card {
-          background: rgba(10, 12, 16, 0.8);
+          background: rgba(14, 18, 25, 0.72);
           backdrop-filter: blur(20px);
-          border: 1px solid #1E293B;
+          border: 1px solid #252a35;
+          transition:
+            border-color 0.3s ease,
+            box-shadow 0.3s ease,
+            transform 0.3s ease;
         }
 
-        .mesh-gradient {
-          background-color: #111318;
+        .glass-card:hover {
+          border-color: rgba(77, 142, 255, 0.35);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .bg-grid-pattern {
           background-image:
-            radial-gradient(at 0% 0%, rgba(77, 142, 255, 0.15) 0px, transparent 50%),
-            radial-gradient(at 100% 100%, rgba(78, 222, 163, 0.1) 0px, transparent 50%),
-            radial-gradient(at 50% 50%, rgba(173, 198, 255, 0.05) 0px, transparent 50%);
-        }
-
-        .glow-button { box-shadow: 0px 0px 20px rgba(77, 142, 255, 0.15); }
-
-        .marching-ants {
-          background-image:
-            linear-gradient(to right, #424754 50%, transparent 50%),
-            linear-gradient(to right, #424754 50%, transparent 50%),
-            linear-gradient(to bottom, #424754 50%, transparent 50%),
-            linear-gradient(to bottom, #424754 50%, transparent 50%);
-          background-position: left top, left bottom, left top, right top;
-          background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-          background-size: 20px 1px, 20px 1px, 1px 20px, 1px 20px;
-          animation: ants 20s infinite linear;
-        }
-
-        @keyframes ants {
-          from { background-position: 0 0, 0 100%, 0 0, 100% 0; }
-          to   { background-position: 100% 0, -100% 100%, 0 100%, 100% -100%; }
+            linear-gradient(rgba(173, 198, 255, 0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(173, 198, 255, 0.08) 1px, transparent 1px);
+          background-size: 50px 50px;
+          mask-image: linear-gradient(
+            to bottom,
+            black 0%,
+            transparent 80%
+          );
         }
 
         .material-symbols-outlined {
-          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          font-variation-settings:
+            "FILL" 0,
+            "wght" 400,
+            "GRAD" 0,
+            "opsz" 24;
         }
       `}</style>
 
-      <div className="bg-[#111318] text-white min-h-screen selection:bg-[#4d8eff] selection:text-[#001a42]">
+      <div className="min-h-screen bg-[#090c11] text-white">
         <TopAppBar />
 
-        <main className="pt-16 min-h-screen mesh-gradient overflow-x-hidden">
-          <HeroSection
-            file={file}
-            setFile={setFile}
-            loading={loading}
-            result={result}
-            onUpload={handleUpload}
-          />
-          <FeaturesGrid />
-          <StatsSection />
+        <main>
+          <HeroSection />
+          <FeaturesSection />
+          <HowItWorks />
+          <CTASection />
         </main>
 
         <Footer />
