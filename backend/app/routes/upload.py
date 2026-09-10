@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi.responses import FileResponse
 import fitz
 import os
 
@@ -37,14 +38,16 @@ async def upload_resume(file: UploadFile = File(...)):
 
     # Parse resume
     parsed_data = parse_resume(text)
-    
 
     db = SessionLocal()
-    resume = Resume(name=parsed_data["name"],
-                    email=parsed_data["email"],
-                    phone=parsed_data["phone"],
-                    skills=", ".join(parsed_data["skills"]),
-                    raw_text=text)
+    resume = Resume(
+        name=parsed_data["name"],
+        email=parsed_data["email"],
+        phone=parsed_data["phone"],
+        skills=", ".join(parsed_data["skills"]),
+        raw_text=text,
+        filename=file.filename
+    )
 
     db.add(resume)
     db.commit()
@@ -71,7 +74,8 @@ def get_resumes():
                 "email": resume.email,
                 "phone": resume.phone,
                 "skills": resume.skills,
-                "raw_text": resume.raw_text
+                "raw_text": resume.raw_text,
+                "filename": resume.filename
             }
             for resume in resumes
         ]
@@ -101,6 +105,47 @@ def get_resume(resume_id: int):
     finally:
         db.close()
 
+@router.get("/resumes/{resume_id}/file")
+def get_resume_file(resume_id: int):
+    db = SessionLocal()
+
+    try:
+        resume = db.query(Resume).filter(
+            Resume.id == resume_id
+        ).first()
+
+        if not resume:
+            raise HTTPException(
+                status_code=404,
+                detail="Resume not found"
+            )
+
+        if not resume.filename:
+            raise HTTPException(
+                status_code=404,
+                detail="Original resume file not available"
+            )
+
+        file_path = os.path.join(
+            UPLOAD_FOLDER,
+            os.path.basename(resume.filename)
+        )
+
+        if not os.path.exists(file_path):
+            raise HTTPException(
+                status_code=404,
+                detail="Original resume file not found on server"
+            )
+
+        return FileResponse(
+            path=file_path,
+            media_type="application/pdf",
+            filename=resume.filename
+        )
+
+    finally:
+        db.close()
+
 @router.delete("/resumes/{resume_id}")
 def delete_resume(resume_id: int, db: Session = Depends(get_db)):
     resume = db.query(Resume).filter(Resume.id == resume_id).first()
@@ -111,7 +156,4 @@ def delete_resume(resume_id: int, db: Session = Depends(get_db)):
     db.delete(resume)
     db.commit()
 
-    return {
-        "message": "Resume deleted successfully",
-        "resume_id": resume_id
-        }
+    return {"message": "Resume deleted successfully", "resume_id": resume_id}

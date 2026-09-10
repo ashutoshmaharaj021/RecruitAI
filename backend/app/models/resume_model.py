@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text
 from app.database.db import Base
 
+
 class Resume(Base):
 
     __tablename__ = "resumes"
@@ -9,5 +10,6 @@ class Resume(Base):
     name = Column(String)
     email = Column(String)
     phone = Column(String)
-    skills = Column(Text)      
+    skills = Column(Text)
     raw_text = Column(Text)
+    filename = Column(String)

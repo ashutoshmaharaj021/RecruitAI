@@ -52,10 +52,8 @@ def extract_name(text):
     """
     Extract the most likely candidate name from a resume.
 
-    Strategy:
-    1. Check the first few lines.
-    2. Look around email/phone contact information.
-    3. Use spaCy PERSON entities as a fallback.
+    Uses multiple signals instead of relying on a hardcoded list
+    of resume headings or project names.
     """
 
     lines = [
@@ -64,38 +62,233 @@ def extract_name(text):
         if line.strip()
     ]
 
-    excluded_phrases = {
-        "resume",
-        "curriculum vitae",
-        "cv",
-        "profile",
-        "summary",
-        "objective",
-        "career objective",
-        "experience",
-        "work experience",
-        "education",
-        "skills",
-        "technical skills",
-        "projects",
-        "certifications",
-        "contact",
-        "developer",
-        "software developer",
-        "software engineer",
-        "engineer",
-        "student",
-        "github",
-        "linkedin",
-        "portfolio",
-        "participations",
-        "soft skills",
-    }
+    if not lines:
+        return None
 
-    skill_words = {
-        skill.lower()
-        for skill in SKILLS_DB
-    }
+    # ---------------------------------------------------------
+    # Basic name validation
+    # ---------------------------------------------------------
+
+    def looks_like_name(value):
+        value = value.strip()
+
+        if not value:
+            return False
+
+        # Email / URL
+        if "@" in value:
+            return False
+
+        if "http://" in value.lower():
+            return False
+
+        if "https://" in value.lower():
+            return False
+
+        if "www." in value.lower():
+            return False
+
+        # Names should not contain numbers
+        if re.search(r"\d", value):
+            return False
+
+        # Remove common separators
+        cleaned = re.sub(
+            r"[|•,:;()\[\]{}]",
+            " ",
+            value
+        )
+
+        cleaned = re.sub(
+            r"\s+",
+            " ",
+            cleaned
+        ).strip()
+
+        words = cleaned.split()
+
+        # Most names have 2-4 words
+        if len(words) < 2 or len(words) > 4:
+            return False
+
+        # Every word should look like a name
+        for word in words:
+            if not re.fullmatch(
+                r"[A-Za-z][A-Za-z'-]*",
+                word
+            ):
+                return False
+
+        return True
+
+    # ---------------------------------------------------------
+    # Find contact information
+    # ---------------------------------------------------------
+
+    email_pattern = (
+        r"[A-Za-z0-9._%+-]+"
+        r"@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+    )
+
+    phone_pattern = r"(?:\+91[\s-]?)?[6-9]\d{9}"
+
+    contact_indices = []
+
+    for index, line in enumerate(lines):
+
+        if re.search(email_pattern, line):
+            contact_indices.append(index)
+
+        elif re.search(phone_pattern, line):
+            contact_indices.append(index)
+
+    # ---------------------------------------------------------
+    # Generate candidates around contact information
+    # ---------------------------------------------------------
+
+    candidates = []
+
+    for contact_index in contact_indices:
+
+        # Look several lines around the contact information
+        start = max(0, contact_index - 8)
+        end = min(len(lines), contact_index + 3)
+
+        for index in range(start, end):
+
+            candidate = lines[index]
+
+            if not looks_like_name(candidate):
+                continue
+
+            score = 0
+
+            distance = abs(index - contact_index)
+
+            # -------------------------------------------------
+            # Distance from contact information
+            # -------------------------------------------------
+
+            if distance == 1:
+                score += 8
+            elif distance == 2:
+                score += 6
+            elif distance <= 4:
+                score += 4
+            else:
+                score += 1
+
+            # -------------------------------------------------
+            # Capitalization
+            # -------------------------------------------------
+
+            if candidate.isupper():
+                score += 4
+
+            words = candidate.split()
+
+            if all(
+                word[0].isupper()
+                for word in words
+                if word
+            ):
+                score += 3
+
+            # -------------------------------------------------
+            # spaCy PERSON signal
+            # -------------------------------------------------
+
+            candidate_doc = nlp(candidate)
+
+            if any(
+                ent.label_ == "PERSON"
+                for ent in candidate_doc.ents
+            ):
+                score += 4
+
+            # -------------------------------------------------
+            # Candidate position
+            # -------------------------------------------------
+
+            if index < 10:
+                score += 2
+
+            candidates.append(
+                (score, candidate)
+            )
+
+    # ---------------------------------------------------------
+    # Choose highest-scoring contact candidate
+    # ---------------------------------------------------------
+
+    if candidates:
+
+        candidates.sort(
+            key=lambda item: item[0],
+            reverse=True
+        )
+
+        return candidates[0][1]
+
+    # ---------------------------------------------------------
+    # Fallback: inspect beginning of resume
+    # ---------------------------------------------------------
+
+    beginning_candidates = []
+
+    for index, line in enumerate(lines[:10]):
+
+        if not looks_like_name(line):
+            continue
+
+        score = 0
+
+        # Earlier line = stronger signal
+        score += max(0, 10 - index)
+
+        # Uppercase names are common
+        if line.isupper():
+            score += 5
+
+        words = line.split()
+
+        # Title Case
+        if all(
+            word[0].isupper()
+            for word in words
+            if word
+        ):
+            score += 3
+
+        beginning_candidates.append(
+            (score, line)
+        )
+
+    if beginning_candidates:
+
+        beginning_candidates.sort(
+            key=lambda item: item[0],
+            reverse=True
+        )
+
+        return beginning_candidates[0][1]
+
+    # ---------------------------------------------------------
+    # Final fallback: spaCy PERSON
+    # ---------------------------------------------------------
+
+    doc = nlp(text)
+
+    for ent in doc.ents:
+
+        if ent.label_ == "PERSON":
+
+            candidate = ent.text.strip()
+
+            if looks_like_name(candidate):
+                return candidate
+
+    return None
 
     def looks_like_name(value):
         value = value.strip()
