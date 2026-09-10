@@ -15,6 +15,8 @@ interface Resume {
   raw_text: string;
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function getSkills(skills: string) {
   if (!skills) return [];
 
@@ -24,17 +26,219 @@ function getSkills(skills: string) {
     .filter(Boolean);
 }
 
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+
+function Sidebar() {
+  const items = [
+    {
+      icon: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard",
+      active: false,
+    },
+    {
+      icon: "description",
+      label: "Resumes",
+      href: "/resumes",
+      active: true,
+    },
+    {
+      icon: "cloud_upload",
+      label: "Uploads",
+      href: "/upload",
+      active: false,
+    },
+    {
+      icon: "settings",
+      label: "Settings",
+      href: "#",
+      active: false,
+    },
+  ];
+
+  return (
+    <aside className="hidden md:flex flex-col gap-1 w-[240px] fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#0c0e12] border-r border-[#424754] px-4 pt-6 z-40">
+      {items.map(({ icon, label, href, active }) => {
+        // Settings is not implemented yet
+        if (label === "Settings") {
+          return (
+            <div
+              key={label}
+              title="Settings page coming soon"
+              className="flex items-center gap-3 px-4 py-2 rounded-xl text-[#8c909f] cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined">
+                {icon}
+              </span>
+
+              <span className="text-[15px]">
+                {label}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <Link
+            key={label}
+            href={href}
+            className={`flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${
+              active
+                ? "bg-[#4d8eff]/10 text-[#adc6ff]"
+                : "text-[#c2c6d6] hover:bg-[#333539]/50 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined">
+              {icon}
+            </span>
+
+            <span className="text-[15px]">
+              {label}
+            </span>
+          </Link>
+        );
+      })}
+    </aside>
+  );
+}
+
+// ─── Top Navigation ──────────────────────────────────────────────────────────
+
+function TopNav() {
+  return (
+    <nav className="fixed top-0 left-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
+      {/* Logo */}
+
+      <Link href="/" className="flex items-center gap-1">
+        <span className="material-symbols-outlined text-[#adc6ff]">
+          clinical_notes
+        </span>
+
+        <span className="text-2xl font-bold tracking-tighter text-white">
+          RecruitAI
+        </span>
+      </Link>
+
+      {/* Desktop Navigation */}
+
+      <div className="hidden md:flex items-center gap-10">
+        <Link
+          href="/dashboard"
+          className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          href="/resumes"
+          className="text-[15px] text-[#adc6ff] font-medium"
+        >
+          Resumes
+        </Link>
+
+        <Link
+          href="/upload"
+          className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
+        >
+          Uploads
+        </Link>
+
+        <span
+          className="text-[15px] text-[#8c909f] cursor-not-allowed"
+          title="Settings page coming soon"
+        >
+          Settings
+        </span>
+      </div>
+
+      {/* Quick Upload */}
+
+      <div className="flex items-center gap-4">
+        <Link
+          href="/upload"
+          className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-[#adc6ff] text-[#002e6a] text-[13px] font-medium hover:brightness-110 transition-all"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            cloud_upload
+          </span>
+
+          Quick Upload
+        </Link>
+
+        {/* Profile */}
+
+        <div className="w-8 h-8 rounded-full bg-[#282a2e] border border-[#424754] flex items-center justify-center">
+          <span className="material-symbols-outlined text-[#c2c6d6]">
+            account_circle
+          </span>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ─── Mobile Bottom Navigation ────────────────────────────────────────────────
+
+function MobileBottomNav() {
+  const items = [
+    {
+      icon: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard",
+    },
+    {
+      icon: "description",
+      label: "Resumes",
+      href: "/resumes",
+    },
+    {
+      icon: "cloud_upload",
+      label: "Upload",
+      href: "/upload",
+    },
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-[#111318]/95 backdrop-blur-lg border-t border-[#424754]">
+      {items.map(({ icon, label, href }) => {
+        const active = label === "Resumes";
+
+        return (
+          <Link
+            key={label}
+            href={href}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              active
+                ? "text-[#adc6ff]"
+                : "text-[#c2c6d6] hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined">
+              {icon}
+            </span>
+
+            <span className="text-[11px] font-medium">
+              {label}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function ResumesPage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setsearchQuery] = useState("");
-  const [selectedSkill, setselectedSkill] = useState("all");
-  const [deletingId, setdeletingId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("all");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // Fetch resumes from FastAPI
+  // ─── Fetch resumes ─────────────────────────────────────────────────────────
+
   useEffect(() => {
     const fetchResumes = async () => {
       try {
@@ -47,6 +251,7 @@ export default function ResumesPage() {
         setResumes(response.data);
       } catch (err) {
         console.error("Failed to fetch resumes:", err);
+
         setError(
           "Unable to load resumes. Please make sure the backend is running.",
         );
@@ -58,7 +263,8 @@ export default function ResumesPage() {
     fetchResumes();
   }, []);
 
-  // Get all unique skills from all resumes
+  // ─── Get all unique skills ─────────────────────────────────────────────────
+
   const allSkills = useMemo(() => {
     const skillSet = new Set<string>();
 
@@ -71,7 +277,8 @@ export default function ResumesPage() {
     return Array.from(skillSet).sort();
   }, [resumes]);
 
-  // Filter resumes based on search and selected skill
+  // ─── Filter resumes ────────────────────────────────────────────────────────
+
   const filteredResumes = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -88,12 +295,15 @@ export default function ResumesPage() {
       const matchesSkill =
         selectedSkill === "all" ||
         resumeSkills.some(
-          (skill) => skill.toLowerCase() === selectedSkill.toLowerCase(),
+          (skill) =>
+            skill.toLowerCase() === selectedSkill.toLowerCase(),
         );
 
       return matchesSearch && matchesSkill;
     });
   }, [resumes, searchQuery, selectedSkill]);
+
+  // ─── Delete resume ─────────────────────────────────────────────────────────
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
@@ -103,21 +313,33 @@ export default function ResumesPage() {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`http://127.0.0.1:8000/resumes/${id}`);
+      setDeletingId(id);
 
-      // Remove the deleted resume immediately from the UI
+      await axios.delete(
+        `http://127.0.0.1:8000/resumes/${id}`,
+      );
+
+      // Remove from frontend immediately
       setResumes((currentResumes) =>
-        currentResumes.filter((resume) => resume.id !== id),
+        currentResumes.filter(
+          (resume) => resume.id !== id,
+        ),
       );
     } catch (error) {
       console.error("Failed to delete resume:", error);
-      alert("Failed to delete resume. Please try again.");
+
+      alert(
+        "Failed to delete resume. Please try again.",
+      );
+    } finally {
+      setDeletingId(null);
     }
   };
 
   return (
     <>
       {/* Material Symbols */}
+
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
@@ -153,61 +375,20 @@ export default function ResumesPage() {
       `}</style>
 
       <div className="min-h-screen bg-[#111318] text-white">
-        {/* ───────────────── Top Navigation ───────────────── */}
+        {/* Top Navigation */}
 
-        <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[#adc6ff]">
-              clinical_notes
-            </span>
+        <TopNav />
 
-            <span className="text-2xl font-bold tracking-tighter">
-              RecruitAI
-            </span>
-          </Link>
+        {/* Sidebar */}
 
-          {/* Navigation */}
-          <div className="hidden md:flex items-center gap-10">
-            <Link
-              href="/dashboard"
-              className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
-            >
-              Dashboard
-            </Link>
+        <Sidebar />
 
-            <Link
-              href="/resumes"
-              className="text-[15px] text-[#adc6ff] font-medium"
-            >
-              Resumes
-            </Link>
+        {/* Main Content */}
 
-            <Link
-              href="/upload"
-              className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
-            >
-              Uploads
-            </Link>
-
-            <span className="text-[15px] text-[#c2c6d6] cursor-pointer hover:text-[#adc6ff]">
-              Settings
-            </span>
-          </div>
-
-          {/* Profile */}
-          <div className="w-8 h-8 rounded-full bg-[#282a2e] border border-[#424754] flex items-center justify-center">
-            <span className="material-symbols-outlined text-[#c2c6d6]">
-              account_circle
-            </span>
-          </div>
-        </nav>
-
-        {/* ───────────────── Main Content ───────────────── */}
-
-        <main className="pt-24 pb-20 px-8">
+        <main className="md:ml-[240px] pt-24 pb-24 px-6 md:px-8">
           <div className="max-w-7xl mx-auto">
-            {/* Header */}
+
+            {/* ───────────── Header ───────────── */}
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
@@ -231,78 +412,94 @@ export default function ResumesPage() {
                 <span className="material-symbols-outlined text-[20px]">
                   cloud_upload
                 </span>
+
                 Upload Resume
               </Link>
             </div>
-            {/* Search & Filter */}
 
-            {!loading && !error && filteredResumes.length > 0 && (
-              <div className="mb-8 space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  {/* Search Box */}
+            {/* ───────────── Search & Filter ───────────── */}
 
-                  <div className="relative flex-1">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8c909f]">
-                      search
-                    </span>
+            {!loading &&
+              !error &&
+              filteredResumes.length > 0 && (
+                <div className="mb-8 space-y-4">
+                  <div className="flex flex-col md:flex-row gap-4">
 
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setsearchQuery(e.target.value)}
-                      placeholder="Search by name, email, phone, or skill..."
-                      className="w-full bg-[#0c0e12] border border-[#424754] rounded-xl py-3.5 pl-12 pr-4 text-[14px] text-white placeholder:text-[#6f7380] outline-none focus:border-[#4d8eff] transition-colors"
-                    />
+                    {/* Search */}
 
-                    {searchQuery && (
-                      <button
-                        onClick={() => setsearchQuery("")}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8c909f] hover:text-white transition-colors"
+                    <div className="relative flex-1">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8c909f]">
+                        search
+                      </span>
+
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) =>
+                          setSearchQuery(e.target.value)
+                        }
+                        placeholder="Search by name, email, phone, or skill..."
+                        className="w-full bg-[#0c0e12] border border-[#424754] rounded-xl py-3.5 pl-12 pr-12 text-[14px] text-white placeholder:text-[#6f7380] outline-none focus:border-[#4d8eff] transition-colors"
+                      />
+
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8c909f] hover:text-white transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            close
+                          </span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Skill Filter */}
+
+                    <div className="relative md:w-64">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8c909f] pointer-events-none">
+                        filter_list
+                      </span>
+
+                      <select
+                        value={selectedSkill}
+                        onChange={(e) =>
+                          setSelectedSkill(e.target.value)
+                        }
+                        className="w-full appearance-none bg-[#0c0e12] border border-[#424754] rounded-xl py-3.5 pl-12 pr-10 text-[14px] text-white outline-none focus:border-[#4d8eff] transition-colors cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-[20px]">
-                          close
-                        </span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Skill Filter */}
-
-                  <div className="relative md:w-64">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8c909f] pointer-events-none">
-                      filter_list
-                    </span>
-
-                    <select
-                      value={selectedSkill}
-                      onChange={(e) => setselectedSkill(e.target.value)}
-                      className="w-full appearance-none bg-[#0c0e12] border border-[#424754] rounded-xl py-3.5 pl-12 pr-10 text-[14px] text-white outline-none focus:border-[#4d8eff] transition-colors cursor-pointer"
-                    >
-                      <option value="all">All Skills</option>
-
-                      {allSkills.map((skill) => (
-                        <option key={skill} value={skill}>
-                          {skill}
+                        <option value="all">
+                          All Skills
                         </option>
-                      ))}
-                    </select>
 
-                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#8c909f] pointer-events-none">
-                      expand_more
-                    </span>
+                        {allSkills.map((skill) => (
+                          <option
+                            key={skill}
+                            value={skill}
+                          >
+                            {skill}
+                          </option>
+                        ))}
+                      </select>
+
+                      <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#8c909f] pointer-events-none">
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Result Count */}
+
+                  <div className="text-[14px] text-[#8c909f]">
+                    {filteredResumes.length} of{" "}
+                    {resumes.length} resume
+                    {resumes.length !== 1 ? "s" : ""} shown
                   </div>
                 </div>
+              )}
 
-                {/* Result Count */}
-
-                <div className="text-[14px] text-[#8c909f]">
-                  {filteredResumes.length} of {resumes.length} resume
-                  {resumes.length !== 1 ? "s" : ""} shown
-                </div>
-              </div>
-            )}
-
-            {/* No Search Results */}
+            {/* ───────────── No Search Results ───────────── */}
 
             {!loading &&
               !error &&
@@ -322,21 +519,23 @@ export default function ResumesPage() {
                   </p>
 
                   <button
+                    type="button"
                     onClick={() => {
-                      setsearchQuery("");
-                      setselectedSkill("all");
+                      setSearchQuery("");
+                      setSelectedSkill("all");
                     }}
                     className="inline-flex items-center gap-2 mt-6 px-5 py-3 bg-[#4d8eff] text-white rounded-xl font-medium hover:brightness-110 transition-all"
                   >
                     <span className="material-symbols-outlined text-[20px]">
                       restart_alt
                     </span>
+
                     Clear Filters
                   </button>
                 </div>
               )}
 
-            {/* Loading */}
+            {/* ───────────── Loading ───────────── */}
 
             {loading && (
               <div className="glass-card rounded-xl p-16 text-center">
@@ -344,11 +543,13 @@ export default function ResumesPage() {
                   progress_activity
                 </span>
 
-                <p className="text-[#c2c6d6] mt-4">Loading parsed resumes...</p>
+                <p className="text-[#c2c6d6] mt-4">
+                  Loading parsed resumes...
+                </p>
               </div>
             )}
 
-            {/* Error */}
+            {/* ───────────── Error ───────────── */}
 
             {!loading && error && (
               <div className="glass-card rounded-xl p-10 text-center border-[#ffb4ab]/30">
@@ -360,172 +561,193 @@ export default function ResumesPage() {
                   Something went wrong
                 </h2>
 
-                <p className="text-[#c2c6d6] mt-2">{error}</p>
-              </div>
-            )}
-
-            {/* Empty State */}
-
-            {!loading && !error && resumes.length === 0 && (
-              <div className="glass-card rounded-xl p-16 text-center">
-                <span className="material-symbols-outlined text-[#8c909f] text-[64px]">
-                  description
-                </span>
-
-                <h2 className="text-2xl font-medium mt-4">No resumes yet</h2>
-
-                <p className="text-[#c2c6d6] mt-2 mb-6">
-                  Upload your first resume to see it here.
+                <p className="text-[#c2c6d6] mt-2">
+                  {error}
                 </p>
-
-                <Link
-                  href="/upload"
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-[#4d8eff] text-white rounded-xl font-medium hover:brightness-110 transition-all"
-                >
-                  Upload Resume
-                </Link>
               </div>
             )}
 
-            {/* Resume Cards */}
+            {/* ───────────── Empty State ───────────── */}
 
-            {!loading && !error && filteredResumes.length > 0 && (
-              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {filteredResumes.map((resume) => {
-                  const skills = getSkills(resume.skills);
+            {!loading &&
+              !error &&
+              resumes.length === 0 && (
+                <div className="glass-card rounded-xl p-16 text-center">
+                  <span className="material-symbols-outlined text-[#8c909f] text-[64px]">
+                    description
+                  </span>
 
-                  return (
-                    <div key={resume.id} className="glass-card rounded-xl p-6">
-                      {/* Candidate Header */}
+                  <h2 className="text-2xl font-medium mt-4">
+                    No resumes yet
+                  </h2>
 
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-[#4d8eff]/10 border border-[#adc6ff]/20 flex items-center justify-center shrink-0">
-                            <span className="material-symbols-outlined text-[#adc6ff]">
-                              person
-                            </span>
-                          </div>
+                  <p className="text-[#c2c6d6] mt-2 mb-6">
+                    Upload your first resume to see it here.
+                  </p>
 
-                          <div>
-                            <h2 className="text-xl font-medium text-white">
-                              {resume.name || "Unknown Candidate"}
-                            </h2>
+                  <Link
+                    href="/upload"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-[#4d8eff] text-white rounded-xl font-medium hover:brightness-110 transition-all"
+                  >
+                    Upload Resume
+                  </Link>
+                </div>
+              )}
 
-                            <p className="text-[13px] text-[#8c909f] mt-1">
-                              Resume ID #{resume.id}
-                            </p>
-                          </div>
-                        </div>
+            {/* ───────────── Resume Cards ───────────── */}
 
-                        <span className="px-3 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 text-[12px] font-medium">
-                          Parsed
-                        </span>
-                      </div>
+            {!loading &&
+              !error &&
+              filteredResumes.length > 0 && (
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {filteredResumes.map((resume) => {
+                    const skills = getSkills(resume.skills);
 
-                      {/* Contact Information */}
+                    return (
+                      <div
+                        key={resume.id}
+                        className="glass-card rounded-xl p-6"
+                      >
+                        {/* Candidate Header */}
 
-                      <div className="mt-6 space-y-3">
-                        <div className="flex items-center gap-3">
-                          <span className="material-symbols-outlined text-[#8c909f] text-[20px]">
-                            mail
-                          </span>
-
-                          <span className="text-[14px] text-[#c2c6d6] break-all">
-                            {resume.email || "No email detected"}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className="material-symbols-outlined text-[#8c909f] text-[20px]">
-                            phone
-                          </span>
-
-                          <span className="text-[14px] text-[#c2c6d6]">
-                            {resume.phone || "No phone detected"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Skills */}
-
-                      <div className="mt-6">
-                        <p className="text-[12px] uppercase tracking-widest text-[#8c909f] mb-3">
-                          Skills
-                        </p>
-
-                        <div className="flex flex-wrap gap-2">
-                          {skills.length > 0 ? (
-                            skills.map((skill, index) => (
-                              <span
-                                key={`${skill}-${index}`}
-                                className="px-3 py-1 rounded-full bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20 text-[12px] font-medium"
-                              >
-                                {skill}
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-[#4d8eff]/10 border border-[#adc6ff]/20 flex items-center justify-center shrink-0">
+                              <span className="material-symbols-outlined text-[#adc6ff]">
+                                person
                               </span>
-                            ))
-                          ) : (
-                            <span className="text-[13px] text-[#8c909f]">
-                              No skills detected
-                            </span>
-                          )}
+                            </div>
+
+                            <div>
+                              <h2 className="text-xl font-medium text-white">
+                                {resume.name ||
+                                  "Unknown Candidate"}
+                              </h2>
+
+                              <p className="text-[13px] text-[#8c909f] mt-1">
+                                Resume ID #{resume.id}
+                              </p>
+                            </div>
+                          </div>
+
+                          <span className="px-3 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 text-[12px] font-medium">
+                            Parsed
+                          </span>
                         </div>
-                      </div>
 
-                      {/* Footer */}
+                        {/* Contact Information */}
 
-                      <div className="mt-6 pt-5 border-t border-[#424754] flex items-center justify-between">
-                        <span className="text-[12px] text-[#8c909f]">
-                          Stored in PostgreSQL
-                        </span>
+                        <div className="mt-6 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-[#8c909f] text-[20px]">
+                              mail
+                            </span>
 
-                        <div className="flex items-center gap-5">
-                          {/* Delete Button */}
+                            <span className="text-[14px] text-[#c2c6d6] break-all">
+                              {resume.email ||
+                                "No email detected"}
+                            </span>
+                          </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(resume.id)}
-                            disabled={deletingId === resume.id}
-                            className="flex items-center gap-1 text-[13px] text-[#ffb4ab] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <span
-                              className={`material-symbols-outlined text-[18px] ${
-                                deletingId === resume.id ? "animate-spin" : ""
-                              }`}
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-[#8c909f] text-[20px]">
+                              phone
+                            </span>
+
+                            <span className="text-[14px] text-[#c2c6d6]">
+                              {resume.phone ||
+                                "No phone detected"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Skills */}
+
+                        <div className="mt-6">
+                          <p className="text-[12px] uppercase tracking-widest text-[#8c909f] mb-3">
+                            Skills
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            {skills.length > 0 ? (
+                              skills.map((skill, index) => (
+                                <span
+                                  key={`${skill}-${index}`}
+                                  className="px-3 py-1 rounded-full bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20 text-[12px] font-medium"
+                                >
+                                  {skill}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[13px] text-[#8c909f]">
+                                No skills detected
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Card Footer */}
+
+                        <div className="mt-6 pt-5 border-t border-[#424754] flex items-center justify-between">
+                          <span className="text-[12px] text-[#8c909f]">
+                            Stored in PostgreSQL
+                          </span>
+
+                          <div className="flex items-center gap-5">
+                            {/* Delete */}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDelete(resume.id)
+                              }
+                              disabled={
+                                deletingId === resume.id
+                              }
+                              className="flex items-center gap-1 text-[13px] text-[#ffb4ab] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
+                              <span
+                                className={`material-symbols-outlined text-[18px] ${
+                                  deletingId === resume.id
+                                    ? "animate-spin"
+                                    : ""
+                                }`}
+                              >
+                                {deletingId === resume.id
+                                  ? "progress_activity"
+                                  : "delete"}
+                              </span>
+
                               {deletingId === resume.id
-                                ? "progress_activity"
-                                : "delete"}
-                            </span>
+                                ? "Deleting..."
+                                : "Delete"}
+                            </button>
 
-                            {deletingId === resume.id
-                              ? "Deleting..."
-                              : "Delete"}
-                          </button>
+                            {/* View Resume */}
 
-                          {/* View Resume */}
+                            <Link
+                              href={`/resumes/${resume.id}`}
+                              className="flex items-center gap-1 text-[13px] text-[#adc6ff] hover:text-white transition-colors"
+                            >
+                              View Resume
 
-                          <Link
-                            href={`/resumes/${resume.id}`}
-                            className="flex items-center gap-1 text-[13px] text-[#adc6ff] hover:text-white transition-colors"
-                          >
-                            View Resume
-                            <span className="material-symbols-outlined text-[18px]">
-                              arrow_forward
-                            </span>
-                          </Link>
+                              <span className="material-symbols-outlined text-[18px]">
+                                arrow_forward
+                              </span>
+                            </Link>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </section>
-            )}
+                    );
+                  })}
+                </section>
+              )}
           </div>
         </main>
 
         {/* Footer */}
 
-        <footer className="border-t border-[#424754] bg-[#0c0e12] py-10">
+        <footer className="md:ml-[240px] border-t border-[#424754] bg-[#0c0e12] py-10">
           <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <span className="text-xl font-bold tracking-tighter">
               RecruitAI
@@ -536,6 +758,10 @@ export default function ResumesPage() {
             </span>
           </div>
         </footer>
+
+        {/* Mobile Navigation */}
+
+        <MobileBottomNav />
       </div>
     </>
   );
