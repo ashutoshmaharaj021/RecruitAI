@@ -53,6 +53,7 @@ flowchart TD
 4. The extracted text is parsed using spaCy and regular expressions to identify the candidate's name, email, phone number, and skills.
 5. The structured data is saved to PostgreSQL using SQLAlchemy.
 6. The structured data is returned to the frontend as JSON and displayed to the user.
+7. User can also see the original PDF of the parsed resume from the parsed resume section
 
 ---
 
