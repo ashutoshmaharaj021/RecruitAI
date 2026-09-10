@@ -24,10 +24,7 @@ This is a functional demonstration of an end-to-end resume parsing pipeline, not
 - PDF resume upload from the frontend
 - Resume text extraction using PyMuPDF
 - Resume parsing using spaCy and regular expressions
-- Candidate name extraction
-- Email extraction
-- Phone number extraction
-- Skills extraction
+- Candidate name, Email, Phone Number, Skills extraction
 - Parsed data displayed on the frontend
 - Parsed resume data stored in PostgreSQL
 - Stored resume records viewable via PostgreSQL/pgAdmin
@@ -111,46 +108,6 @@ flowchart TD
 
 ---
 
-## Project Structure
-
-```
-AI-Resume-Parser/
-│
-├── frontend/
-│   ├── src/
-│   │   └── app/
-│   │       ├── page.tsx
-│   │       ├── layout.tsx
-│   │       ├── globals.css
-│   │       ├── dashboard/
-│   │       │   └── page.tsx
-│   │       ├── uploads/
-│   │       │   └── page.tsx
-│   │       └── resumes/
-│   │           └── page.tsx
-│   ├── package.json
-│   └── ...
-│
-├── backend/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── database/
-│   │   │   └── db.py
-│   │   ├── models/
-│   │   │   └── resume_model.py
-│   │   ├── parsers/
-│   │   │   └── resume_parser.py
-│   │   └── routes/
-│   │       └── upload.py
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── ...
-│
-├── .gitignore
-└── README.md
-```
-
----
 
 ## Database Schema
 
