@@ -502,6 +502,10 @@ export default function DashboardPage() {
     skillCounts[normalizedSkill] = (skillCounts[normalizedSkill] || 0) + 1;
   });
 
+  const topSkills = Object.entries(skillCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+
   // Find the most common skill
   const mostCommonSkill =
     Object.entries(skillCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
@@ -628,6 +632,50 @@ export default function DashboardPage() {
               {STATS.map((stat) => (
                 <StatCard key={stat.label} stat={stat} />
               ))}
+            </section>
+
+            <section className="mt-8 rounded-2xl border border-[#1e2a3a] bg-[#080c11] p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-white">Top Skills</h2>
+
+                <p className="mt-1 text-sm text-[#8d99aa]">
+                  Most frequently detected skills across parsed resumes.
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                {topSkills.length > 0 ? (
+                  topSkills.map(([skill, count]) => {
+                    const percentage =
+                      totalParsed > 0 ? (count / totalParsed) * 100 : 0;
+
+                    return (
+                      <div key={skill}>
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-sm font-medium capitalize text-white">
+                            {skill}
+                          </span>
+
+                          <span className="text-xs text-[#8d99aa]">
+                            {count} {count === 1 ? "resume" : "resumes"}
+                          </span>
+                        </div>
+
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-[#151c26]">
+                          <div
+                            className="h-full rounded-full bg-[#4d8eff] transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-[#8d99aa]">
+                    No skills detected yet.
+                  </p>
+                )}
+              </div>
             </section>
 
             {/* Section header */}
