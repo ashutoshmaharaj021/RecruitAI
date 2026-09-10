@@ -2,13 +2,6 @@
 
 An AI/NLP-powered full-stack web application that lets users upload PDF resumes, automatically extracts key candidate information (name, email, phone, and skills), and stores the structured data in PostgreSQL.
 
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
-
 ---
 
 ## Overview
@@ -32,8 +25,6 @@ This is a functional demonstration of an end-to-end resume parsing pipeline, not
 - FastAPI REST API
 - CORS configuration
 - Responsive frontend UI (Next.js, TypeScript, Tailwind CSS, ShadCN UI)
-
-> The **Resumes** page exists in the frontend but is still under development and is not yet fully connected to live PostgreSQL data.
 
 ---
 
@@ -91,7 +82,7 @@ flowchart TD
 |---|---|
 | PyMuPDF | PDF text extraction |
 | spaCy | NLP-based parsing |
-| Regular Expressions | Pattern-based field extraction |
+| Regex | Pattern-based field extraction |
 
 ### Database
 
@@ -100,11 +91,6 @@ flowchart TD
 | PostgreSQL | Persistent data storage |
 | SQLAlchemy | ORM |
 | psycopg2 | PostgreSQL adapter |
-
-### Development
-
-- Git
-- GitHub
 
 ---
 
