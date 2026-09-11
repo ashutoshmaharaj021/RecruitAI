@@ -430,16 +430,30 @@ def extract_name(text):
 
     return None
 def extract_skills(text):
+    """
+    Extract skills from resume text using word-boundary matching.
+
+    This prevents short skills from accidentally matching
+    inside unrelated words.
+    """
 
     text = text.lower()
-
     found_skills = []
 
     for skill in SKILLS_DB:
-        if skill in text:
+        skill_lower = skill.lower()
+
+        # Escape the skill so characters such as +, #, . etc.
+        # are treated literally by regex.
+        escaped_skill = re.escape(skill_lower)
+
+        # Match the complete skill rather than a substring.
+        pattern = rf"(?<!\w){escaped_skill}(?!\w)"
+
+        if re.search(pattern, text):
             found_skills.append(skill)
 
-    return list(set(found_skills))
+    return sorted(set(found_skills))
 
 
 def parse_resume(text):
