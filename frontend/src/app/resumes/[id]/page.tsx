@@ -273,6 +273,76 @@ export default function ResumeDetailPage() {
                   </div>
                 </section>
 
+                <div className="mt-6 rounded-2xl border border-[#1e2a3a] bg-[#080c11] p-6">
+                  <div className="mb-5">
+                    <h2 className="text-lg font-semibold text-white">
+                      Parsing Summary
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[#8d99aa]">
+                      Information successfully extracted from this resume.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="rounded-xl border border-[#1e2a3a] bg-[#0d131b] p-4">
+                      <div className="flex items-center gap-2 text-[#4edea3]">
+                        <span className="material-symbols-outlined text-[18px]">
+                          person
+                        </span>
+
+                        <span className="text-xs font-medium">Name</span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        {resume.name ? "Detected" : "Not detected"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-[#1e2a3a] bg-[#0d131b] p-4">
+                      <div className="flex items-center gap-2 text-[#4edea3]">
+                        <span className="material-symbols-outlined text-[18px]">
+                          mail
+                        </span>
+
+                        <span className="text-xs font-medium">Email</span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        {resume.email ? "Detected" : "Not detected"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-[#1e2a3a] bg-[#0d131b] p-4">
+                      <div className="flex items-center gap-2 text-[#4edea3]">
+                        <span className="material-symbols-outlined text-[18px]">
+                          phone
+                        </span>
+
+                        <span className="text-xs font-medium">Phone</span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        {resume.phone ? "Detected" : "Not detected"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-[#1e2a3a] bg-[#0d131b] p-4">
+                      <div className="flex items-center gap-2 text-[#adc6ff]">
+                        <span className="material-symbols-outlined text-[18px]">
+                          psychology
+                        </span>
+
+                        <span className="text-xs font-medium">Skills</span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        {getSkills(resume.skills).length} detected
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Skills */}
 
                 <section className="glass-card rounded-xl p-8">
