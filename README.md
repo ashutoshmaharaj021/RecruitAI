@@ -10,6 +10,7 @@ An AI/NLP-powered full-stack web application that lets users upload PDF resumes,
 
 This is a functional demonstration of an end-to-end resume parsing pipeline, not an enterprise-scale production system.
 
+
 ---
 
 ## Current Features
