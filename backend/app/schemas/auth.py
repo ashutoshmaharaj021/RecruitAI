@@ -18,3 +18,14 @@ class RegisterResponse(BaseModel):
     name: str
     email: EmailStr
     role: str
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+
+class LoginResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    role: str
