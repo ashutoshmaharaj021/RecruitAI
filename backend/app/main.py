@@ -3,6 +3,7 @@ from app.routes.upload import router as upload_router
 
 from app.database.db import engine, Base
 from app.models.resume_model import Resume
+from app.models.user_model import User
 
 from fastapi.middleware.cors import CORSMiddleware
      
