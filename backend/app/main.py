@@ -1,5 +1,6 @@
 from fastapi import FastAPI  # type: ignore[import]
 from app.routes.upload import router as upload_router
+from app.routes.auth import router as auth_router
 
 from app.database.db import engine, Base
 from app.models.resume_model import Resume
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(upload_router)
+app.include_router(auth_router)
 
 @app.get("/")
 def root():
