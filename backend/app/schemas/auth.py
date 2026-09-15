@@ -25,7 +25,5 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    id: int
-    name: str
-    email: EmailStr
-    role: str
+    access_token: str
+    token_type: str

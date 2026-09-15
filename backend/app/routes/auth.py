@@ -10,7 +10,7 @@ from app.schemas.auth import (
     LoginResponse,
 )
 from app.security.password import hash_password, verify_password
-
+from app.security.jwt import create_access_token
 
 router = APIRouter()
 
@@ -79,4 +79,14 @@ def login_user(
             detail="Invalid email or password",
         )
 
-    return user
+    access_token = create_access_token(
+        data={
+            "sub": str(user.id),
+            "role": user.role,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
