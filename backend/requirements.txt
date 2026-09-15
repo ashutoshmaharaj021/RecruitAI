@@ -8,3 +8,4 @@ spacy
 pwdlib[argon2]
 python-multipart
 pydantic[email]
+PyJWT
