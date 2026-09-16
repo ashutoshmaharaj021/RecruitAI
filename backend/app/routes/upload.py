@@ -64,24 +64,22 @@ async def upload_resume(file: UploadFile = File(...),
         "raw_text": text[:2000]
     }
 @router.get("/resumes")
-def get_resumes():
+def get_resumes(current_user: User = Depends(get_current_user), ):
     db = SessionLocal()
 
     try:
-        resumes = db.query(Resume).all()
+        resumes = (db.query(Resume).filter(
+            Resume.user_id == current_user.id).all())
 
-        return [
-            {
-                "id": resume.id,
-                "name": resume.name,
-                "email": resume.email,
-                "phone": resume.phone,
-                "skills": resume.skills,
-                "raw_text": resume.raw_text,
-                "filename": resume.filename
-            }
-            for resume in resumes
-        ]
+        return [{
+            "id": resume.id,
+            "name": resume.name,
+            "email": resume.email,
+            "phone": resume.phone,
+            "skills": resume.skills,
+            "raw_text": resume.raw_text,
+            "filename": resume.filename,
+        } for resume in resumes]
 
     finally:
         db.close()
