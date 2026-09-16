@@ -9,6 +9,9 @@ from fastapi.responses import FileResponse
 import fitz
 import os
 
+from app.models.user_model import User
+from app.security.auth import get_current_user
+
 from fastapi import APIRouter, UploadFile, File
 
 from app.parsers.resume_parser import parse_resume
@@ -20,7 +23,8 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @router.post("/upload")
-async def upload_resume(file: UploadFile = File(...)):
+async def upload_resume(file: UploadFile = File(...),
+                        current_user: User = Depends(get_current_user)):
 
     file_path = f"{UPLOAD_FOLDER}/{file.filename}"
 
@@ -40,14 +44,13 @@ async def upload_resume(file: UploadFile = File(...)):
     parsed_data = parse_resume(text)
 
     db = SessionLocal()
-    resume = Resume(
-        name=parsed_data["name"],
-        email=parsed_data["email"],
-        phone=parsed_data["phone"],
-        skills=", ".join(parsed_data["skills"]),
-        raw_text=text,
-        filename=file.filename
-    )
+    resume = Resume(user_id=current_user.id,
+                    name=parsed_data["name"],
+                    email=parsed_data["email"],
+                    phone=parsed_data["phone"],
+                    skills=", ".join(parsed_data["skills"]),
+                    raw_text=text,
+                    filename=file.filename)
 
     db.add(resume)
     db.commit()
