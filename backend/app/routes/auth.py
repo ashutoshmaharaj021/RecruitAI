@@ -11,7 +11,7 @@ from app.schemas.auth import (
 )
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
-from app.security.auth import get_current_user_id
+from app.security.auth import get_current_user
 
 
 router = APIRouter()
@@ -95,21 +95,12 @@ def login_user(
 
 
 @router.get("/me")
-def get_current_user(
-    user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db),
+def get_current_user_info(
+    current_user: User = Depends(get_current_user),
 ):
-    user = db.query(User).filter(User.id == user_id).first()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
     return {
-        "id": user.id,
-        "name": user.name,
-        "email": user.email,
-        "role": user.role,
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "role": current_user.role,
     }
