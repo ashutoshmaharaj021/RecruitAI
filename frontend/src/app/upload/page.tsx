@@ -2,10 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import axios from "axios";
+import api from "@/lib/api";
 import {useRouter} from "next/navigation";
-// TODO: import axios from "axios";
-// TODO: import { useRouter } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -487,32 +485,28 @@ export default function UploadPage() {
   formData.append("file", file);
 
   try {
-    const response = await axios.post(
-      "http://127.0.0.1:8000/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    const response = await api.post(
+  "/upload",
+  formData,
+  {
+    onUploadProgress: (event) => {
+      if (event.total) {
+        const uploadProgress = Math.round(
+          (event.loaded * 100) / event.total
+        );
 
-        onUploadProgress: (event) => {
-          if (event.total) {
-            const uploadProgress = Math.round(
-              (event.loaded * 100) / event.total
-            );
+        // Keep some room for backend parsing
+        const displayProgress = Math.min(
+          Math.round(uploadProgress * 0.7),
+          70
+        );
 
-            // Keep some room for backend parsing
-            const displayProgress = Math.min(
-              Math.round(uploadProgress * 0.7),
-              70
-            );
-
-            setProgress(displayProgress);
-            setStatusLabel(getStatusLabel(displayProgress));
-          }
-        },
+        setProgress(displayProgress);
+        setStatusLabel(getStatusLabel(displayProgress));
       }
-    );
+    },
+  }
+);
 
     console.log("Upload response:", response.data);
 

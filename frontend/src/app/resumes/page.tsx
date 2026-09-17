@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -244,9 +244,7 @@ export default function ResumesPage() {
       try {
         setLoading(true);
 
-        const response = await axios.get<Resume[]>(
-          "http://127.0.0.1:8000/resumes",
-        );
+        const response = await api.get<Resume[]>("/resumes");
 
         setResumes(response.data);
       } catch (err) {

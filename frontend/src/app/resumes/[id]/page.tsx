@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -30,15 +30,33 @@ export default function ResumeDetailPage() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const handleViewPdf = async () => {
+    if (!resume) return;
+
+    try {
+      const response = await api.get(`/resumes/${resume.id}/file`, {
+        responseType: "blob",
+      });
+
+      const pdfUrl = URL.createObjectURL(response.data);
+
+      window.open(pdfUrl, "_blank");
+
+      setTimeout(() => {
+        URL.revokeObjectURL(pdfUrl);
+      }, 60000);
+    } catch (err) {
+      console.error("Failed to open resume PDF:", err);
+      setError("Unable to open the original resume PDF.");
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
 
     const fetchResume = async () => {
       try {
-        const response = await axios.get<Resume>(
-          `http://127.0.0.1:8000/resumes/${id}`,
-        );
+        const response = await api.get<Resume>(`/resumes/${id}`);
 
         setResume(response.data);
       } catch (err) {
@@ -211,17 +229,16 @@ export default function ResumeDetailPage() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                      <a
-                        href={`http://127.0.0.1:8000/resumes/${resume.id}/file`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={handleViewPdf}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#4d8eff] text-white text-[13px] font-medium hover:bg-[#5b98ff] transition-colors"
                       >
                         <span className="material-symbols-outlined text-[18px]">
                           picture_as_pdf
                         </span>
                         View Original PDF
-                      </a>
+                      </button>
 
                       <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 text-[13px] font-medium">
                         <span className="w-2 h-2 rounded-full bg-[#4edea3]" />

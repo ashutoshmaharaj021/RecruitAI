@@ -59,6 +59,7 @@ async def upload_resume(file: UploadFile = File(...),
     db.close()
 
     return {
+        "id": resume.id,
         "filename": file.filename,
         "parsed_data": parsed_data,
         "raw_text": text[:2000]
@@ -159,13 +160,30 @@ def get_resume_file(
         db.close()
 
 @router.delete("/resumes/{resume_id}")
-def delete_resume(resume_id: int, db: Session = Depends(get_db)):
-    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+def delete_resume(
+    resume_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    resume = (
+        db.query(Resume)
+        .filter(
+            Resume.id == resume_id,
+            Resume.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not resume:
-        raise HTTPException(status_code=404, detail="Resume not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Resume not found",
+        )
 
     db.delete(resume)
     db.commit()
 
-    return {"message": "Resume deleted successfully", "resume_id": resume_id}
+    return {
+        "message": "Resume deleted successfully",
+        "resume_id": resume_id,
+    }
