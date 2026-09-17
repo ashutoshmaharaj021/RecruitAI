@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import api from "@/lib/api";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+import api from "@/lib/api";
+import { getStoredUser, isLoggedIn, type UserRole } from "@/lib/auth";
 
 interface Candidate {
   id: number;
@@ -25,13 +28,22 @@ function StatCard({ stat }: { stat: Stat }) {
         {stat.label}
       </p>
 
-      <p className="text-[32px] font-semibold text-white mt-3">{stat.value}</p>
+      <p className="text-[32px] font-semibold text-white mt-3">
+        {stat.value}
+      </p>
 
       <div className="mt-3">{stat.sub}</div>
     </div>
   );
 }
-function SkillBadge({ label, variant }: { label: string; variant: string }) {
+
+function SkillBadge({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: string;
+}) {
   return (
     <span
       className={`px-3 py-1 rounded-full text-[13px] font-medium ${
@@ -49,8 +61,12 @@ const STATS: Stat[] = [
     value: "1,284",
     sub: (
       <div className="flex items-center gap-1 text-[#4edea3]">
-        <span className="material-symbols-outlined text-base">trending_up</span>
-        <span className="text-[13px] font-medium">+12% from last month</span>
+        <span className="material-symbols-outlined text-base">
+          trending_up
+        </span>
+        <span className="text-[13px] font-medium">
+          +12% from last month
+        </span>
       </div>
     ),
   },
@@ -72,7 +88,9 @@ const STATS: Stat[] = [
     sub: (
       <div className="flex items-center gap-1 text-[#ffb786]">
         <span className="material-symbols-outlined text-base">timer</span>
-        <span className="text-[13px] font-medium">Average wait: 2m</span>
+        <span className="text-[13px] font-medium">
+          Average wait: 2m
+        </span>
       </div>
     ),
   },
@@ -102,7 +120,7 @@ const CANDIDATES: Candidate[] = [
     email: "elena.rdz@design-core.com",
     parsedAt: "Parsed 15m ago",
     avatarUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBOFERpzLWu0dOC3ZVNmV2LF6vb4JLfEi885gYdY-5QQrg7caHiCSwf40mhYmnA0FuRsdXTjQCk0YUPEE1o4CHSDajEDfJbiIsSqd1jxiCCNldvUgwS2xiEK9caJ1e9OnCtvgJI-efy2wtwr_9uGx1fe0LdYdY9D9F5alfRndIMn9f6W-l_80uGe2Qpa84muyZ3r6hkecl1y6c5kPiUuZJ2-cT--HcS2bAQ0KunwUP-UYr_4RRPsitr_noHFr73pBEWS8jpcf0VaEM",
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuBOFERpzLW0dOC3ZVNmV2LF6vb4JLfEi885gYdY-5QQrg7caHiCSwf40mhYmnA0FuRsdXTjQCk0YUPEE1o4CHSDajEDfJbiIsSqd1jxiCCNldvUgwS2xiEK9caJ1e9OnCtvgJI-efy2wtwr_9uGx1fe0LdYdY9D9F5alfRndIMn9f6W-l_80uGe2Qpa84muyZ3r6hkecl1y6c5kPiUuZJ2-cT--HcS2bAQ0KunwUP-UYr_4RRPsitr_noHFr73pBEWS8jpcf0VaEM",
     statusColor: "secondary",
     skills: [
       { label: "Figma", variant: "secondary" },
@@ -128,9 +146,12 @@ const CANDIDATES: Candidate[] = [
 ];
 
 const SKILL_STYLES: Record<string, string> = {
-  primary: "bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20",
-  secondary: "bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20",
-  tertiary: "bg-[#ffb786]/10 text-[#ffb786] border border-[#ffb786]/20",
+  primary:
+    "bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20",
+  secondary:
+    "bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20",
+  tertiary:
+    "bg-[#ffb786]/10 text-[#ffb786] border border-[#ffb786]/20",
 };
 
 const STATUS_DOT: Record<string, string> = {
@@ -150,7 +171,6 @@ function getSkills(skills: string) {
 function TopNav() {
   return (
     <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
-      {/* Logo */}
       <Link href="/" className="flex items-center gap-1">
         <span className="material-symbols-outlined text-[#adc6ff]">
           clinical_notes
@@ -161,7 +181,6 @@ function TopNav() {
         </span>
       </Link>
 
-      {/* Desktop links */}
       <div className="hidden md:flex items-center gap-10">
         <Link
           href="/dashboard"
@@ -192,7 +211,6 @@ function TopNav() {
         </span>
       </div>
 
-      {/* Right actions */}
       <div className="flex items-center gap-4">
         <Link
           href="/upload"
@@ -286,7 +304,6 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 
   return (
     <div className="glass-card gradient-border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group rounded-xl">
-      {/* Avatar + Name */}
       <div className="flex items-center gap-6">
         <div className="relative shrink-0">
           <div className="w-12 h-12 rounded-xl bg-[#4d8eff]/10 border border-[#adc6ff]/20 flex items-center justify-center">
@@ -303,11 +320,12 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
             {candidate.name || "Unknown Candidate"}
           </h3>
 
-          <p className="text-[15px] text-[#c2c6d6]">Resume #{candidate.id}</p>
+          <p className="text-[15px] text-[#c2c6d6]">
+            Resume #{candidate.id}
+          </p>
         </div>
       </div>
 
-      {/* Skills */}
       <div className="flex flex-wrap gap-2">
         {skills.slice(0, 4).map((skill, index) => (
           <SkillBadge
@@ -330,7 +348,6 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
         )}
       </div>
 
-      {/* Contact */}
       <div className="flex items-center justify-between md:justify-end gap-6">
         <div className="text-right hidden sm:block">
           <p className="text-[14px] font-mono text-[#c2c6d6]">
@@ -365,8 +382,12 @@ function DropZone() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
+
     const f = e.dataTransfer.files[0];
-    if (f) setFileName(f.name);
+
+    if (f) {
+      setFileName(f.name);
+    }
   };
 
   return (
@@ -393,20 +414,25 @@ function DropZone() {
       >
         upload_file
       </span>
+
       <div className="text-center">
         <h4 className="text-[24px] font-medium text-white">
           {fileName ? fileName : "Drop resumes here to parse"}
         </h4>
+
         <p className="text-[15px] text-[#c2c6d6]">
           Supports PDF, DOCX, and JSON (max 10MB each)
         </p>
       </div>
+
       <input
         ref={inputRef}
         type="file"
         accept=".pdf,.doc,.docx,.json"
         className="hidden"
-        onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
+        onChange={(e) =>
+          setFileName(e.target.files?.[0]?.name ?? null)
+        }
       />
     </div>
   );
@@ -426,7 +452,9 @@ function MobileBottomNav() {
         <div
           key={label}
           className={`flex flex-col items-center active:scale-90 transition-all cursor-pointer ${
-            active ? "text-[#adc6ff]" : "text-[#c2c6d6] hover:text-white"
+            active
+              ? "text-[#adc6ff]"
+              : "text-[#c2c6d6] hover:text-white"
           }`}
         >
           <span className="material-symbols-outlined">{icon}</span>
@@ -444,6 +472,7 @@ function Footer() {
         <span className="text-[24px] font-bold text-white tracking-tighter">
           RecruitAI
         </span>
+
         <div className="flex gap-10">
           {["Privacy", "Terms", "API Docs", "Contact"].map((l) => (
             <span
@@ -454,6 +483,7 @@ function Footer() {
             </span>
           ))}
         </div>
+
         <span className="text-[15px] text-[#c2c6d6]">
           © 2024 RecruitAI. Precision Intelligence.
         </span>
@@ -465,12 +495,31 @@ function Footer() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   const [resumes, setResumes] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [role, setRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     const fetchResumes = async () => {
+      const user = getStoredUser();
+
+      // No authenticated user → login
+      if (!isLoggedIn() || !user) {
+        router.replace("/login");
+        return;
+      }
+
+      setRole(user.role);
+
+      // Recruiters should not access candidate resume data
+      if (user.role !== "candidate") {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await api.get<Candidate[]>("/resumes");
 
@@ -484,12 +533,14 @@ export default function DashboardPage() {
     };
 
     fetchResumes();
-  }, []);
+  }, [router]);
 
   const totalParsed = resumes.length;
 
   // Collect all skills from all resumes
-  const allSkills = resumes.flatMap((resume) => getSkills(resume.skills));
+  const allSkills = resumes.flatMap((resume) =>
+    getSkills(resume.skills)
+  );
 
   // Count how many resumes contain each skill
   const skillCounts: Record<string, number> = {};
@@ -497,7 +548,8 @@ export default function DashboardPage() {
   allSkills.forEach((skill) => {
     const normalizedSkill = skill.toLowerCase();
 
-    skillCounts[normalizedSkill] = (skillCounts[normalizedSkill] || 0) + 1;
+    skillCounts[normalizedSkill] =
+      (skillCounts[normalizedSkill] || 0) + 1;
   });
 
   const topSkills = Object.entries(skillCounts)
@@ -506,14 +558,17 @@ export default function DashboardPage() {
 
   // Find the most common skill
   const mostCommonSkill =
-    Object.entries(skillCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+    Object.entries(skillCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+    "N/A";
 
   // Number of different skills detected
   const uniqueSkills = Object.keys(skillCounts).length;
 
   // Average number of skills per resume
   const averageSkills =
-    totalParsed > 0 ? (allSkills.length / totalParsed).toFixed(1) : "0";
+    totalParsed > 0
+      ? (allSkills.length / totalParsed).toFixed(1)
+      : "0";
 
   const STATS: Stat[] = [
     {
@@ -521,9 +576,13 @@ export default function DashboardPage() {
       value: totalParsed.toString(),
       sub: (
         <div className="flex items-center gap-1 text-[#4edea3]">
-          <span className="material-symbols-outlined text-base">database</span>
+          <span className="material-symbols-outlined text-base">
+            database
+          </span>
 
-          <span className="text-[13px] font-medium">Stored in PostgreSQL</span>
+          <span className="text-[13px] font-medium">
+            Stored in PostgreSQL
+          </span>
         </div>
       ),
     },
@@ -537,14 +596,18 @@ export default function DashboardPage() {
             psychology
           </span>
 
-          <span className="text-[13px] font-medium">Skills detected</span>
+          <span className="text-[13px] font-medium">
+            Skills detected
+          </span>
         </div>
       ),
     },
 
     {
       label: "Top Skill",
-      value: mostCommonSkill.charAt(0).toUpperCase() + mostCommonSkill.slice(1),
+      value:
+        mostCommonSkill.charAt(0).toUpperCase() +
+        mostCommonSkill.slice(1),
       sub: (
         <div className="flex items-center gap-1 text-[#ffb786]">
           <span className="material-symbols-outlined text-base">
@@ -563,7 +626,9 @@ export default function DashboardPage() {
       value: averageSkills,
       sub: (
         <div className="flex items-center gap-1 text-[#4edea3]">
-          <span className="material-symbols-outlined text-base">analytics</span>
+          <span className="material-symbols-outlined text-base">
+            analytics
+          </span>
 
           <span className="text-[13px] font-medium">
             Average detected skills
@@ -572,180 +637,264 @@ export default function DashboardPage() {
       ),
     },
   ];
+
   return (
     <>
-      {/* Material Symbols font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet"
-      />
+      {role === "recruiter" ? (
+        <main className="min-h-screen bg-[#111318] text-white flex items-center justify-center px-6">
+          <div className="text-center max-w-md">
+            <span className="material-symbols-outlined text-[#adc6ff] text-[64px]">
+              business_center
+            </span>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+            <h1 className="text-3xl font-semibold mt-6">
+              Recruiter Workspace
+            </h1>
 
-        body { font-family: 'Geist', sans-serif; background-color: #050505; }
+            <p className="text-[#8c909f] mt-3">
+              Your recruiter workspace is being prepared.
+            </p>
 
-        .glass-card {
-          background: rgba(10, 12, 16, 0.8);
-          backdrop-filter: blur(20px);
-          border: 1px solid #1E293B;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card:hover {
-          border-color: #4d8eff;
-          box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.8);
-        }
-        .gradient-border {
-          position: relative;
-          border-radius: 0.5rem;
-        }
-        .gradient-border::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: 0.5rem;
-          padding: 1px;
-          background: linear-gradient(135deg, #424754 0%, transparent 100%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
-        }
-        .glow-button { box-shadow: 0 0 15px rgba(77, 142, 255, 0.15); }
-        .glow-button:hover { box-shadow: 0 0 25px rgba(77, 142, 255, 0.3); }
-        .material-symbols-outlined {
-          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-      `}</style>
+            <p className="text-sm text-[#646977] mt-2">
+              Candidate resume management is available only to candidate
+              accounts.
+            </p>
 
-      <div className="bg-[#111318] text-white min-h-screen">
-        <TopNav />
-        <Sidebar />
-
-        <main className="md:ml-[240px] pt-24 pb-16 px-8 min-h-screen">
-          <div className="max-w-7xl mx-auto space-y-10">
-            {/* Stats */}
-            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {STATS.map((stat) => (
-                <StatCard key={stat.label} stat={stat} />
-              ))}
-            </section>
-
-            <section className="mt-8 rounded-2xl border border-[#1e2a3a] bg-[#080c11] p-6">
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-white">Top Skills</h2>
-
-                <p className="mt-1 text-sm text-[#8d99aa]">
-                  Most frequently detected skills across parsed resumes.
-                </p>
-              </div>
-
-              <div className="space-y-5">
-                {topSkills.length > 0 ? (
-                  topSkills.map(([skill, count]) => {
-                    const percentage =
-                      totalParsed > 0 ? (count / totalParsed) * 100 : 0;
-
-                    return (
-                      <div key={skill}>
-                        <div className="mb-2 flex items-center justify-between">
-                          <span className="text-sm font-medium capitalize text-white">
-                            {skill}
-                          </span>
-
-                          <span className="text-xs text-[#8d99aa]">
-                            {count} {count === 1 ? "resume" : "resumes"}
-                          </span>
-                        </div>
-
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-[#151c26]">
-                          <div
-                            className="h-full rounded-full bg-[#4d8eff] transition-all duration-500"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-sm text-[#8d99aa]">
-                    No skills detected yet.
-                  </p>
-                )}
-              </div>
-            </section>
-
-            {/* Section header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-[32px] font-semibold tracking-[-0.02em] text-white">
-                  Recent Parsed Resumes
-                </h1>
-                <p className="text-[15px] text-[#c2c6d6] mt-2">
-                  Real-time intelligence extraction from active applications.
-                </p>
-              </div>
-              {/* Mobile add button */}
-              <Link
-                href="/upload"
-                className="md:hidden flex items-center justify-center p-4 bg-[#4d8eff] text-[#00285d] rounded-full active:scale-90 transition-all"
-              >
-                <span className="material-symbols-outlined">add</span>
-              </Link>
-            </div>
-
-            {/* Candidate list */}
-            <section className="space-y-4">
-              {loading && (
-                <div className="glass-card rounded-xl p-12 text-center">
-                  <span className="material-symbols-outlined text-[#adc6ff] text-[48px] animate-spin">
-                    progress_activity
-                  </span>
-
-                  <p className="text-[#c2c6d6] mt-4">
-                    Loading parsed resumes...
-                  </p>
-                </div>
-              )}
-
-              {!loading && error && (
-                <div className="glass-card rounded-xl p-10 text-center">
-                  <span className="material-symbols-outlined text-[#ffb4ab] text-[48px]">
-                    error
-                  </span>
-
-                  <p className="text-[#c2c6d6] mt-4">{error}</p>
-                </div>
-              )}
-
-              {!loading && !error && resumes.length === 0 && (
-                <div className="glass-card rounded-xl p-12 text-center">
-                  <span className="material-symbols-outlined text-[#8c909f] text-[48px]">
-                    description
-                  </span>
-
-                  <p className="text-[#c2c6d6] mt-4">
-                    No resumes have been parsed yet.
-                  </p>
-                </div>
-              )}
-
-              {!loading &&
-                !error &&
-                resumes.map((resume) => (
-                  <CandidateCard key={resume.id} candidate={resume} />
-                ))}
-            </section>
-
-            {/* Drop zone */}
-            <DropZone />
+            <button
+              onClick={() => router.push("/")}
+              className="mt-8 px-5 py-3 rounded-xl bg-[#adc6ff] text-[#002e6a] font-semibold hover:brightness-110 transition-all"
+            >
+              Back to Home
+            </button>
           </div>
         </main>
+      ) : (
+        <>
+          {/* Material Symbols font */}
+          <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet"
+          />
 
-        <Footer />
-        <MobileBottomNav />
-      </div>
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
+            body {
+              font-family: 'Geist', sans-serif;
+              background-color: #050505;
+            }
+
+            .glass-card {
+              background: rgba(10, 12, 16, 0.8);
+              backdrop-filter: blur(20px);
+              border: 1px solid #1E293B;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .glass-card:hover {
+              border-color: #4d8eff;
+              box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.8);
+            }
+
+            .gradient-border {
+              position: relative;
+              border-radius: 0.5rem;
+            }
+
+            .gradient-border::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              border-radius: 0.5rem;
+              padding: 1px;
+              background: linear-gradient(
+                135deg,
+                #424754 0%,
+                transparent 100%
+              );
+
+              -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+
+              mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+
+              -webkit-mask-composite: xor;
+              mask-composite: exclude;
+              pointer-events: none;
+            }
+
+            .glow-button {
+              box-shadow: 0 0 15px rgba(77, 142, 255, 0.15);
+            }
+
+            .glow-button:hover {
+              box-shadow: 0 0 25px rgba(77, 142, 255, 0.3);
+            }
+
+            .material-symbols-outlined {
+              font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24;
+            }
+          `}</style>
+
+          <div className="bg-[#111318] text-white min-h-screen">
+            <TopNav />
+            <Sidebar />
+
+            <main className="md:ml-[240px] pt-24 pb-16 px-8 min-h-screen">
+              <div className="max-w-7xl mx-auto space-y-10">
+                {/* Stats */}
+                <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  {STATS.map((stat) => (
+                    <StatCard key={stat.label} stat={stat} />
+                  ))}
+                </section>
+
+                {/* Top Skills */}
+                <section className="mt-8 rounded-2xl border border-[#1e2a3a] bg-[#080c11] p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-white">
+                      Top Skills
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[#8d99aa]">
+                      Most frequently detected skills across parsed
+                      resumes.
+                    </p>
+                  </div>
+
+                  <div className="space-y-5">
+                    {topSkills.length > 0 ? (
+                      topSkills.map(([skill, count]) => {
+                        const percentage =
+                          totalParsed > 0
+                            ? (count / totalParsed) * 100
+                            : 0;
+
+                        return (
+                          <div key={skill}>
+                            <div className="mb-2 flex items-center justify-between">
+                              <span className="text-sm font-medium capitalize text-white">
+                                {skill}
+                              </span>
+
+                              <span className="text-xs text-[#8d99aa]">
+                                {count}{" "}
+                                {count === 1
+                                  ? "resume"
+                                  : "resumes"}
+                              </span>
+                            </div>
+
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-[#151c26]">
+                              <div
+                                className="h-full rounded-full bg-[#4d8eff] transition-all duration-500"
+                                style={{
+                                  width: `${percentage}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-sm text-[#8d99aa]">
+                        No skills detected yet.
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* Section header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-[32px] font-semibold tracking-[-0.02em] text-white">
+                      Recent Parsed Resumes
+                    </h1>
+
+                    <p className="text-[15px] text-[#c2c6d6] mt-2">
+                      Real-time intelligence extraction from active
+                      applications.
+                    </p>
+                  </div>
+
+                  {/* Mobile add button */}
+                  <Link
+                    href="/upload"
+                    className="md:hidden flex items-center justify-center p-4 bg-[#4d8eff] text-[#00285d] rounded-full active:scale-90 transition-all"
+                  >
+                    <span className="material-symbols-outlined">
+                      add
+                    </span>
+                  </Link>
+                </div>
+
+                {/* Candidate list */}
+                <section className="space-y-4">
+                  {loading && (
+                    <div className="glass-card rounded-xl p-12 text-center">
+                      <span className="material-symbols-outlined text-[#adc6ff] text-[48px] animate-spin">
+                        progress_activity
+                      </span>
+
+                      <p className="text-[#c2c6d6] mt-4">
+                        Loading parsed resumes...
+                      </p>
+                    </div>
+                  )}
+
+                  {!loading && error && (
+                    <div className="glass-card rounded-xl p-10 text-center">
+                      <span className="material-symbols-outlined text-[#ffb4ab] text-[48px]">
+                        error
+                      </span>
+
+                      <p className="text-[#c2c6d6] mt-4">
+                        {error}
+                      </p>
+                    </div>
+                  )}
+
+                  {!loading &&
+                    !error &&
+                    resumes.length === 0 && (
+                      <div className="glass-card rounded-xl p-12 text-center">
+                        <span className="material-symbols-outlined text-[#8c909f] text-[48px]">
+                          description
+                        </span>
+
+                        <p className="text-[#c2c6d6] mt-4">
+                          No resumes have been parsed yet.
+                        </p>
+                      </div>
+                    )}
+
+                  {!loading &&
+                    !error &&
+                    resumes.map((resume) => (
+                      <CandidateCard
+                        key={resume.id}
+                        candidate={resume}
+                      />
+                    ))}
+                </section>
+
+                {/* Drop zone */}
+                <DropZone />
+              </div>
+            </main>
+
+            <Footer />
+            <MobileBottomNav />
+          </div>
+        </>
+      )}
     </>
   );
 }
