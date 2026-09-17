@@ -85,14 +85,23 @@ def get_resumes(current_user: User = Depends(get_current_user), ):
         db.close()
 
 @router.get("/resumes/{resume_id}")
-def get_resume(resume_id: int):
+def get_resume(
+        resume_id: int,
+        current_user: User = Depends(get_current_user),
+):
     db = SessionLocal()
 
     try:
-        resume = db.query(Resume).filter(Resume.id == resume_id).first()
+        resume = (db.query(Resume).filter(
+            Resume.id == resume_id,
+            Resume.user_id == current_user.id,
+        ).first())
 
         if not resume:
-            raise HTTPException(status_code=404, detail="Resume not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Resume not found",
+            )
 
         return {
             "id": resume.id,
@@ -100,7 +109,7 @@ def get_resume(resume_id: int):
             "email": resume.email,
             "phone": resume.phone,
             "skills": resume.skills,
-            "raw_text": resume.raw_text
+            "raw_text": resume.raw_text,
         }
 
     finally:
