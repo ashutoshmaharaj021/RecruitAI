@@ -10,7 +10,7 @@ import fitz
 import os
 
 from app.models.user_model import User
-from app.security.auth import get_current_user
+from app.security.roles import require_role
 
 from fastapi import APIRouter, UploadFile, File
 
@@ -24,7 +24,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @router.post("/upload")
 async def upload_resume(file: UploadFile = File(...),
-                        current_user: User = Depends(get_current_user)):
+                        current_user: User = Depends(require_role("candidate"))):
 
     file_path = f"{UPLOAD_FOLDER}/{file.filename}"
 
@@ -65,7 +65,7 @@ async def upload_resume(file: UploadFile = File(...),
         "raw_text": text[:2000]
     }
 @router.get("/resumes")
-def get_resumes(current_user: User = Depends(get_current_user), ):
+def get_resumes(current_user: User = Depends(require_role("candidate")), ):
     db = SessionLocal()
 
     try:
@@ -88,7 +88,7 @@ def get_resumes(current_user: User = Depends(get_current_user), ):
 @router.get("/resumes/{resume_id}")
 def get_resume(
         resume_id: int,
-        current_user: User = Depends(get_current_user),
+        current_user: User = Depends(require_role("candidate")),
 ):
     db = SessionLocal()
 
@@ -119,7 +119,7 @@ def get_resume(
 @router.get("/resumes/{resume_id}/file")
 def get_resume_file(
         resume_id: int,
-        current_user: User = Depends(get_current_user),
+        current_user: User = Depends(require_role("candidate")),
 ):
     db = SessionLocal()
 
@@ -162,7 +162,7 @@ def get_resume_file(
 @router.delete("/resumes/{resume_id}")
 def delete_resume(
     resume_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("candidate")),
     db: Session = Depends(get_db),
 ):
     resume = (
