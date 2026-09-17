@@ -22,6 +22,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // Step 1: Login and receive JWT
       const response = await api.post("/login", {
         email,
         password,
@@ -29,11 +30,28 @@ export default function LoginPage() {
 
       const { access_token } = response.data;
 
+      // Step 2: Store JWT
       localStorage.setItem("access_token", access_token);
 
+      // Step 3: Get authenticated user information
+      const userResponse = await api.get("/me");
+
+      const user = userResponse.data;
+
+      // Step 4: Store user information
+      localStorage.setItem("user", JSON.stringify(user));
+
+      console.log("Logged in user:", user);
+      console.log("User role:", user.role);
+
+      // Step 5: Go to dashboard
       router.push("/dashboard");
     } catch (error: any) {
       console.error("Login failed:", error);
+
+      // Remove token if authentication failed
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
 
       if (error.response?.status === 401) {
         setError("Invalid email or password.");
