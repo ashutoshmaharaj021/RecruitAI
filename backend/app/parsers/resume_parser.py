@@ -48,25 +48,83 @@ def extract_phone(text):
         return matches[0]
 
     return None
+
+
 def extract_name(text):
     """
     Extract the most likely candidate name from a resume.
 
-    Uses multiple signals instead of relying on a hardcoded list
-    of resume headings or project names.
+    Strategy:
+    1. Prefer lines immediately before email/phone.
+    2. Reject common resume headings, education institutions,
+       job titles, and other non-name phrases.
+    3. Prefer short name-like lines near the top.
+    4. Use spaCy PERSON as a fallback.
     """
 
-    lines = [
-        line.strip()
-        for line in text.splitlines()
-        if line.strip()
-    ]
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
 
     if not lines:
         return None
 
     # ---------------------------------------------------------
-    # Basic name validation
+    # Words/phrases that should never be treated as a name
+    # ---------------------------------------------------------
+
+    excluded_words = {
+        "resume",
+        "curriculum",
+        "vitae",
+        "profile",
+        "summary",
+        "objective",
+        "education",
+        "experience",
+        "projects",
+        "project",
+        "skills",
+        "technical",
+        "certifications",
+        "certificate",
+        "certificates",
+        "contact",
+        "contact information",
+        "achievements",
+        "achievement",
+        "internship",
+        "internships",
+        "work",
+        "employment",
+        "professional",
+        "developer",
+        "engineer",
+        "student",
+        "candidate",
+        "university",
+        "college",
+        "school",
+        "institute",
+        "academy",
+        "department",
+        "technology",
+        "technologies",
+        "computer",
+        "science",
+        "engineering",
+        "bachelor",
+        "master",
+        "degree",
+        "education",
+        "experience",
+        "linkedin",
+        "github",
+        "portfolio",
+        "objective",
+        "summary",
+    }
+
+    # ---------------------------------------------------------
+    # Basic validation
     # ---------------------------------------------------------
 
     def looks_like_name(value):
@@ -79,16 +137,13 @@ def extract_name(text):
         if "@" in value:
             return False
 
-        if "http://" in value.lower():
+        lower_value = value.lower()
+
+        if ("http://" in lower_value or "https://" in lower_value
+                or "www." in lower_value):
             return False
 
-        if "https://" in value.lower():
-            return False
-
-        if "www." in value.lower():
-            return False
-
-        # Names should not contain numbers
+        # Numbers usually indicate phone, dates, GPA, etc.
         if re.search(r"\d", value):
             return False
 
@@ -96,26 +151,35 @@ def extract_name(text):
         cleaned = re.sub(
             r"[|•,:;()\[\]{}]",
             " ",
-            value
+            value,
         )
 
         cleaned = re.sub(
             r"\s+",
             " ",
-            cleaned
+            cleaned,
         ).strip()
 
         words = cleaned.split()
 
-        # Most names have 2-4 words
+        # Candidate names normally contain 2-4 words
         if len(words) < 2 or len(words) > 4:
             return False
 
-        # Every word should look like a name
+        # Reject if the complete phrase is clearly not a name
+        if cleaned.lower() in excluded_words:
+            return False
+
+        # Reject if ANY word strongly indicates education/resume content
+        for word in words:
+            if word.lower() in excluded_words:
+                return False
+
+        # Every word should contain alphabetic characters only
         for word in words:
             if not re.fullmatch(
-                r"[A-Za-z][A-Za-z'-]*",
-                word
+                    r"[A-Za-z][A-Za-z'-]*",
+                    word,
             ):
                 return False
 
@@ -125,36 +189,31 @@ def extract_name(text):
     # Find contact information
     # ---------------------------------------------------------
 
-    email_pattern = (
-        r"[A-Za-z0-9._%+-]+"
-        r"@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
-    )
+    email_pattern = (r"[A-Za-z0-9._%+-]+"
+                     r"@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
     phone_pattern = r"(?:\+91[\s-]?)?[6-9]\d{9}"
 
     contact_indices = []
 
     for index, line in enumerate(lines):
-
         if re.search(email_pattern, line):
             contact_indices.append(index)
-
         elif re.search(phone_pattern, line):
             contact_indices.append(index)
 
     # ---------------------------------------------------------
-    # Generate candidates around contact information
+    # Strongest signal:
+    # Look immediately BEFORE contact information
     # ---------------------------------------------------------
 
     candidates = []
 
     for contact_index in contact_indices:
 
-        # Look several lines around the contact information
-        start = max(0, contact_index - 8)
-        end = min(len(lines), contact_index + 3)
+        start = max(0, contact_index - 5)
 
-        for index in range(start, end):
+        for index in range(contact_index - 1, start - 1, -1):
 
             candidate = lines[index]
 
@@ -163,75 +222,59 @@ def extract_name(text):
 
             score = 0
 
-            distance = abs(index - contact_index)
+            distance = contact_index - index
 
-            # -------------------------------------------------
-            # Distance from contact information
-            # -------------------------------------------------
-
+            # Very strong signal
             if distance == 1:
-                score += 8
+                score += 15
             elif distance == 2:
+                score += 10
+            elif distance == 3:
                 score += 6
-            elif distance <= 4:
-                score += 4
             else:
-                score += 1
+                score += 2
 
-            # -------------------------------------------------
-            # Capitalization
-            # -------------------------------------------------
+            # Prefer candidates near beginning of resume
+            if index < 5:
+                score += 6
+            elif index < 10:
+                score += 3
 
+            # ALL CAPS is common for names
             if candidate.isupper():
                 score += 4
 
+            # Title Case
             words = candidate.split()
 
-            if all(
-                word[0].isupper()
-                for word in words
-                if word
-            ):
+            if all(word[0].isupper() for word in words if word):
                 score += 3
 
-            # -------------------------------------------------
-            # spaCy PERSON signal
-            # -------------------------------------------------
-
-            candidate_doc = nlp(candidate)
-
-            if any(
-                ent.label_ == "PERSON"
-                for ent in candidate_doc.ents
-            ):
-                score += 4
-
-            # -------------------------------------------------
-            # Candidate position
-            # -------------------------------------------------
-
-            if index < 10:
+            # Prefer 2-3 word names
+            if len(words) == 2:
+                score += 3
+            elif len(words) == 3:
                 score += 2
 
-            candidates.append(
-                (score, candidate)
-            )
+            # spaCy PERSON signal
+            candidate_doc = nlp(candidate)
 
-    # ---------------------------------------------------------
-    # Choose highest-scoring contact candidate
-    # ---------------------------------------------------------
+            if any(ent.label_ == "PERSON" for ent in candidate_doc.ents):
+                score += 6
+
+            candidates.append((score, candidate))
 
     if candidates:
-
         candidates.sort(
             key=lambda item: item[0],
-            reverse=True
+            reverse=True,
         )
 
         return candidates[0][1]
 
     # ---------------------------------------------------------
-    # Fallback: inspect beginning of resume
+    # Second strategy:
+    # Look at the first 10 lines
     # ---------------------------------------------------------
 
     beginning_candidates = []
@@ -243,192 +286,58 @@ def extract_name(text):
 
         score = 0
 
-        # Earlier line = stronger signal
-        score += max(0, 10 - index)
+        # Earlier lines are more likely to contain the name
+        score += max(0, 12 - index)
 
-        # Uppercase names are common
         if line.isupper():
             score += 5
 
         words = line.split()
 
-        # Title Case
-        if all(
-            word[0].isupper()
-            for word in words
-            if word
-        ):
+        if all(word[0].isupper() for word in words if word):
             score += 3
 
-        beginning_candidates.append(
-            (score, line)
-        )
+        if len(words) == 2:
+            score += 3
+        elif len(words) == 3:
+            score += 2
+
+        # spaCy PERSON signal
+        line_doc = nlp(line)
+
+        if any(ent.label_ == "PERSON" for ent in line_doc.ents):
+            score += 6
+
+        beginning_candidates.append((score, line))
 
     if beginning_candidates:
-
         beginning_candidates.sort(
             key=lambda item: item[0],
-            reverse=True
+            reverse=True,
         )
 
         return beginning_candidates[0][1]
 
     # ---------------------------------------------------------
-    # Final fallback: spaCy PERSON
+    # Final fallback:
+    # spaCy PERSON entities
     # ---------------------------------------------------------
 
     doc = nlp(text)
 
     for ent in doc.ents:
 
-        if ent.label_ == "PERSON":
+        if ent.label_ != "PERSON":
+            continue
 
-            candidate = ent.text.strip()
+        candidate = ent.text.strip()
 
-            if looks_like_name(candidate):
-                return candidate
-
-    return None
-
-    def looks_like_name(value):
-        value = value.strip()
-
-        if not value:
-            return False
-
-        # Reject email addresses
-        if "@" in value:
-            return False
-
-        # Reject URLs
-        if "http://" in value.lower():
-            return False
-
-        if "https://" in value.lower():
-            return False
-
-        if "www." in value.lower():
-            return False
-
-        # Reject anything containing numbers
-        if re.search(r"\d", value):
-            return False
-
-        # Remove separators
-        cleaned = re.sub(
-            r"[|•,:;()\[\]{}]",
-            " ",
-            value
-        )
-
-        cleaned = re.sub(
-            r"\s+",
-            " ",
-            cleaned
-        ).strip()
-
-        words = cleaned.split()
-
-        # Most candidate names contain 2-4 words
-        if len(words) < 2 or len(words) > 4:
-            return False
-
-        lower_value = cleaned.lower()
-
-        # Reject known resume headings
-        if lower_value in excluded_phrases:
-            return False
-
-        # Reject known skill phrases
-        if lower_value in skill_words:
-            return False
-
-        # Reject if any word is a skill
-        for word in words:
-            if word.lower() in skill_words:
-                return False
-
-        # Reject common resume/role words
-        for word in words:
-            if word.lower() in excluded_phrases:
-                return False
-
-        # Every word should look like a name
-        for word in words:
-            if not re.fullmatch(
-                r"[A-Za-z][A-Za-z'-]*",
-                word
-            ):
-                return False
-
-        return True
-
-    # ==========================================================
-    # 1. CHECK FIRST FEW LINES
-    # ==========================================================
-
-    for line in lines[:5]:
-
-        if looks_like_name(line):
-            return line
-
-    # ==========================================================
-    # 2. LOOK AROUND EMAIL / PHONE
-    # ==========================================================
-
-    # This handles resumes where PDF extraction puts the
-    # header/contact section somewhere in the middle.
-
-    contact_indices = []
-
-    for index, line in enumerate(lines):
-
-        if "@" in line:
-            contact_indices.append(index)
-
-        elif re.search(
-            r"(?:\+91[\s-]?)?[6-9]\d{9}",
-            line
-        ):
-            contact_indices.append(index)
-
-    for contact_index in contact_indices:
-
-        # Look up to 5 lines before the contact information
-        start = max(0, contact_index - 5)
-
-        for index in range(contact_index - 1, start - 1, -1):
-
-            candidate = lines[index]
-
-            if looks_like_name(candidate):
-                return candidate
-
-    # ==========================================================
-    # 3. USE SPACY PERSON AS FALLBACK
-    # ==========================================================
-
-    doc = nlp(text)
-
-    for ent in doc.ents:
-
-        if ent.label_ == "PERSON":
-
-            candidate = ent.text.strip()
-
-            if looks_like_name(candidate):
-                return candidate
-
-    # ==========================================================
-    # 4. FINAL FALLBACK
-    # ==========================================================
-
-    for line in lines[:15]:
-
-        if looks_like_name(line):
-            return line
+        if looks_like_name(candidate):
+            return candidate
 
     return None
+
+
 def extract_skills(text):
     """
     Extract skills from resume text using word-boundary matching.

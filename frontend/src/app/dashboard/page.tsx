@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import Link from "next/link";
 
 interface Candidate {
@@ -472,9 +472,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchResumes = async () => {
       try {
-        const response = await axios.get<Candidate[]>(
-          "http://127.0.0.1:8000/resumes",
-        );
+        const response = await api.get<Candidate[]>("/resumes");
 
         setResumes(response.data);
       } catch (err) {
