@@ -116,41 +116,43 @@ def get_resume(
         db.close()
 
 @router.get("/resumes/{resume_id}/file")
-def get_resume_file(resume_id: int):
+def get_resume_file(
+        resume_id: int,
+        current_user: User = Depends(get_current_user),
+):
     db = SessionLocal()
 
     try:
-        resume = db.query(Resume).filter(
-            Resume.id == resume_id
-        ).first()
+        resume = (db.query(Resume).filter(
+            Resume.id == resume_id,
+            Resume.user_id == current_user.id,
+        ).first())
 
         if not resume:
             raise HTTPException(
                 status_code=404,
-                detail="Resume not found"
+                detail="Resume not found",
             )
 
         if not resume.filename:
             raise HTTPException(
                 status_code=404,
-                detail="Original resume file not available"
+                detail="Original resume file not available",
             )
 
-        file_path = os.path.join(
-            UPLOAD_FOLDER,
-            os.path.basename(resume.filename)
-        )
+        file_path = os.path.join(UPLOAD_FOLDER,
+                                 os.path.basename(resume.filename))
 
         if not os.path.exists(file_path):
             raise HTTPException(
                 status_code=404,
-                detail="Original resume file not found on server"
+                detail="Original resume file not found on server",
             )
 
         return FileResponse(
             path=file_path,
             media_type="application/pdf",
-            filename=resume.filename
+            filename=resume.filename,
         )
 
     finally:
