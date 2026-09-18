@@ -28,22 +28,14 @@ function StatCard({ stat }: { stat: Stat }) {
         {stat.label}
       </p>
 
-      <p className="text-[32px] font-semibold text-white mt-3">
-        {stat.value}
-      </p>
+      <p className="text-[32px] font-semibold text-white mt-3">{stat.value}</p>
 
       <div className="mt-3">{stat.sub}</div>
     </div>
   );
 }
 
-function SkillBadge({
-  label,
-  variant,
-}: {
-  label: string;
-  variant: string;
-}) {
+function SkillBadge({ label, variant }: { label: string; variant: string }) {
   return (
     <span
       className={`px-3 py-1 rounded-full text-[13px] font-medium ${
@@ -61,12 +53,8 @@ const STATS: Stat[] = [
     value: "1,284",
     sub: (
       <div className="flex items-center gap-1 text-[#4edea3]">
-        <span className="material-symbols-outlined text-base">
-          trending_up
-        </span>
-        <span className="text-[13px] font-medium">
-          +12% from last month
-        </span>
+        <span className="material-symbols-outlined text-base">trending_up</span>
+        <span className="text-[13px] font-medium">+12% from last month</span>
       </div>
     ),
   },
@@ -88,9 +76,7 @@ const STATS: Stat[] = [
     sub: (
       <div className="flex items-center gap-1 text-[#ffb786]">
         <span className="material-symbols-outlined text-base">timer</span>
-        <span className="text-[13px] font-medium">
-          Average wait: 2m
-        </span>
+        <span className="text-[13px] font-medium">Average wait: 2m</span>
       </div>
     ),
   },
@@ -146,12 +132,9 @@ const CANDIDATES: Candidate[] = [
 ];
 
 const SKILL_STYLES: Record<string, string> = {
-  primary:
-    "bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20",
-  secondary:
-    "bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20",
-  tertiary:
-    "bg-[#ffb786]/10 text-[#ffb786] border border-[#ffb786]/20",
+  primary: "bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/20",
+  secondary: "bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20",
+  tertiary: "bg-[#ffb786]/10 text-[#ffb786] border border-[#ffb786]/20",
 };
 
 const STATUS_DOT: Record<string, string> = {
@@ -320,9 +303,7 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
             {candidate.name || "Unknown Candidate"}
           </h3>
 
-          <p className="text-[15px] text-[#c2c6d6]">
-            Resume #{candidate.id}
-          </p>
+          <p className="text-[15px] text-[#c2c6d6]">Resume #{candidate.id}</p>
         </div>
       </div>
 
@@ -430,9 +411,7 @@ function DropZone() {
         type="file"
         accept=".pdf,.doc,.docx,.json"
         className="hidden"
-        onChange={(e) =>
-          setFileName(e.target.files?.[0]?.name ?? null)
-        }
+        onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
       />
     </div>
   );
@@ -452,9 +431,7 @@ function MobileBottomNav() {
         <div
           key={label}
           className={`flex flex-col items-center active:scale-90 transition-all cursor-pointer ${
-            active
-              ? "text-[#adc6ff]"
-              : "text-[#c2c6d6] hover:text-white"
+            active ? "text-[#adc6ff]" : "text-[#c2c6d6] hover:text-white"
           }`}
         >
           <span className="material-symbols-outlined">{icon}</span>
@@ -538,9 +515,7 @@ export default function DashboardPage() {
   const totalParsed = resumes.length;
 
   // Collect all skills from all resumes
-  const allSkills = resumes.flatMap((resume) =>
-    getSkills(resume.skills)
-  );
+  const allSkills = resumes.flatMap((resume) => getSkills(resume.skills));
 
   // Count how many resumes contain each skill
   const skillCounts: Record<string, number> = {};
@@ -548,8 +523,7 @@ export default function DashboardPage() {
   allSkills.forEach((skill) => {
     const normalizedSkill = skill.toLowerCase();
 
-    skillCounts[normalizedSkill] =
-      (skillCounts[normalizedSkill] || 0) + 1;
+    skillCounts[normalizedSkill] = (skillCounts[normalizedSkill] || 0) + 1;
   });
 
   const topSkills = Object.entries(skillCounts)
@@ -558,17 +532,14 @@ export default function DashboardPage() {
 
   // Find the most common skill
   const mostCommonSkill =
-    Object.entries(skillCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-    "N/A";
+    Object.entries(skillCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
 
   // Number of different skills detected
   const uniqueSkills = Object.keys(skillCounts).length;
 
   // Average number of skills per resume
   const averageSkills =
-    totalParsed > 0
-      ? (allSkills.length / totalParsed).toFixed(1)
-      : "0";
+    totalParsed > 0 ? (allSkills.length / totalParsed).toFixed(1) : "0";
 
   const STATS: Stat[] = [
     {
@@ -576,13 +547,9 @@ export default function DashboardPage() {
       value: totalParsed.toString(),
       sub: (
         <div className="flex items-center gap-1 text-[#4edea3]">
-          <span className="material-symbols-outlined text-base">
-            database
-          </span>
+          <span className="material-symbols-outlined text-base">database</span>
 
-          <span className="text-[13px] font-medium">
-            Stored in PostgreSQL
-          </span>
+          <span className="text-[13px] font-medium">Stored in PostgreSQL</span>
         </div>
       ),
     },
@@ -596,18 +563,14 @@ export default function DashboardPage() {
             psychology
           </span>
 
-          <span className="text-[13px] font-medium">
-            Skills detected
-          </span>
+          <span className="text-[13px] font-medium">Skills detected</span>
         </div>
       ),
     },
 
     {
       label: "Top Skill",
-      value:
-        mostCommonSkill.charAt(0).toUpperCase() +
-        mostCommonSkill.slice(1),
+      value: mostCommonSkill.charAt(0).toUpperCase() + mostCommonSkill.slice(1),
       sub: (
         <div className="flex items-center gap-1 text-[#ffb786]">
           <span className="material-symbols-outlined text-base">
@@ -626,9 +589,7 @@ export default function DashboardPage() {
       value: averageSkills,
       sub: (
         <div className="flex items-center gap-1 text-[#4edea3]">
-          <span className="material-symbols-outlined text-base">
-            analytics
-          </span>
+          <span className="material-symbols-outlined text-base">analytics</span>
 
           <span className="text-[13px] font-medium">
             Average detected skills
@@ -641,32 +602,258 @@ export default function DashboardPage() {
   return (
     <>
       {role === "recruiter" ? (
-        <main className="min-h-screen bg-[#111318] text-white flex items-center justify-center px-6">
-          <div className="text-center max-w-md">
-            <span className="material-symbols-outlined text-[#adc6ff] text-[64px]">
-              business_center
-            </span>
+        <main className="min-h-screen bg-[#111318] text-white">
+          {/* Material Symbols font */}
+          <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet"
+          />
 
-            <h1 className="text-3xl font-semibold mt-6">
-              Recruiter Workspace
-            </h1>
+          <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
 
-            <p className="text-[#8c909f] mt-3">
-              Your recruiter workspace is being prepared.
-            </p>
+      body {
+        font-family: 'Geist', sans-serif;
+        background-color: #050505;
+      }
 
-            <p className="text-sm text-[#646977] mt-2">
-              Candidate resume management is available only to candidate
-              accounts.
-            </p>
+      .recruiter-card {
+        background: rgba(10, 12, 16, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid #1e293b;
+        transition: all 0.3s ease;
+      }
 
-            <button
-              onClick={() => router.push("/")}
-              className="mt-8 px-5 py-3 rounded-xl bg-[#adc6ff] text-[#002e6a] font-semibold hover:brightness-110 transition-all"
-            >
-              Back to Home
-            </button>
-          </div>
+      .recruiter-card:hover {
+        border-color: #4d8eff;
+        box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.5);
+      }
+
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      }
+    `}</style>
+
+          {/* Top Navigation */}
+          <nav className="fixed top-0 w-full bg-[#111318]/90 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#adc6ff]">
+                clinical_notes
+              </span>
+
+              <span className="text-2xl font-bold text-white tracking-tighter">
+                RecruitAI
+              </span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-8">
+              <Link
+                href="/dashboard"
+                className="text-[15px] text-[#adc6ff] font-medium"
+              >
+                Dashboard
+              </Link>
+
+              <Link
+                href="/jobs"
+                className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
+              >
+                Jobs
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/jobs/create"
+                className="hidden md:flex items-center gap-2 bg-[#adc6ff] text-[#002e6a] px-4 py-2 rounded-xl text-[13px] font-medium hover:brightness-110 transition-all"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  add
+                </span>
+                Create Job
+              </Link>
+
+              <div className="w-9 h-9 rounded-full bg-[#1e293b] border border-[#424754] flex items-center justify-center">
+                <span className="material-symbols-outlined text-[#adc6ff]">
+                  person
+                </span>
+              </div>
+            </div>
+          </nav>
+
+          {/* Main Content */}
+          <main className="pt-28 px-8 pb-16">
+            <div className="max-w-7xl mx-auto">
+              {/* Heading */}
+              <div className="mb-10">
+                <p className="text-sm text-[#adc6ff] font-medium uppercase tracking-widest">
+                  Recruiter Workspace
+                </p>
+
+                <h1 className="text-4xl font-semibold text-white mt-3">
+                  Find the right talent.
+                </h1>
+
+                <p className="text-[#8c909f] mt-3 max-w-2xl">
+                  Create job descriptions, manage your hiring requirements, and
+                  prepare your workspace for intelligent candidate matching.
+                </p>
+              </div>
+
+              {/* Main Cards */}
+              <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {/* Jobs Card */}
+                <div className="recruiter-card rounded-2xl p-7">
+                  <div className="w-12 h-12 rounded-xl bg-[#4d8eff]/10 border border-[#adc6ff]/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[#adc6ff] text-[28px]">
+                      work
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl font-semibold text-white mt-6">
+                    Job Descriptions
+                  </h2>
+
+                  <p className="text-[#8c909f] text-sm leading-6 mt-3">
+                    Create and manage the job descriptions you are hiring for.
+                  </p>
+
+                  <Link
+                    href="/jobs"
+                    className="inline-flex items-center gap-2 mt-6 px-4 py-2.5 rounded-xl bg-[#adc6ff] text-[#002e6a] text-sm font-semibold hover:brightness-110 transition-all"
+                  >
+                    Manage Jobs
+                    <span className="material-symbols-outlined text-[18px]">
+                      arrow_forward
+                    </span>
+                  </Link>
+                </div>
+
+                {/* Create Job Card */}
+                <div className="recruiter-card rounded-2xl p-7">
+                  <div className="w-12 h-12 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[#4edea3] text-[28px]">
+                      add_business
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl font-semibold text-white mt-6">
+                    Create a Job
+                  </h2>
+
+                  <p className="text-[#8c909f] text-sm leading-6 mt-3">
+                    Add a new job description with the required skills and
+                    candidate requirements.
+                  </p>
+
+                  <Link
+                    href="/jobs/create"
+                    className="inline-flex items-center gap-2 mt-6 px-4 py-2.5 rounded-xl border border-[#424754] text-white text-sm font-semibold hover:bg-[#1a1c20] transition-all"
+                  >
+                    Create Job
+                    <span className="material-symbols-outlined text-[18px]">
+                      arrow_forward
+                    </span>
+                  </Link>
+                </div>
+
+                {/* Candidate Matching Card */}
+                <div className="recruiter-card rounded-2xl p-7">
+                  <div className="w-12 h-12 rounded-xl bg-[#ffb786]/10 border border-[#ffb786]/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[#ffb786] text-[28px]">
+                      person_search
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl font-semibold text-white mt-6">
+                    Find Candidates
+                  </h2>
+
+                  <p className="text-[#8c909f] text-sm leading-6 mt-3">
+                    Candidate matching will use your job requirements to
+                    identify relevant resumes.
+                  </p>
+
+                  <button
+                    disabled
+                    className="mt-6 px-4 py-2.5 rounded-xl border border-[#333539] text-[#646977] text-sm font-semibold cursor-not-allowed"
+                  >
+                    Coming Soon
+                  </button>
+                </div>
+              </section>
+
+              {/* Workflow */}
+              <section className="mt-10 recruiter-card rounded-2xl p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="material-symbols-outlined text-[#adc6ff]">
+                    account_tree
+                  </span>
+
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Recruitment Workflow
+                    </h2>
+
+                    <p className="text-sm text-[#8c909f] mt-1">
+                      Your RecruitAI hiring workflow
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-9 h-9 shrink-0 rounded-full bg-[#4d8eff]/10 border border-[#adc6ff]/20 flex items-center justify-center text-[#adc6ff] font-semibold">
+                      1
+                    </div>
+
+                    <div>
+                      <h3 className="text-white font-medium">Create Job</h3>
+
+                      <p className="text-sm text-[#8c909f] mt-1">
+                        Define the role, description, and required skills.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-9 h-9 shrink-0 rounded-full bg-[#4edea3]/10 border border-[#4edea3]/20 flex items-center justify-center text-[#4edea3] font-semibold">
+                      2
+                    </div>
+
+                    <div>
+                      <h3 className="text-white font-medium">
+                        Analyze Candidates
+                      </h3>
+
+                      <p className="text-sm text-[#8c909f] mt-1">
+                        Compare candidate resumes against the job requirements.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-9 h-9 shrink-0 rounded-full bg-[#ffb786]/10 border border-[#ffb786]/20 flex items-center justify-center text-[#ffb786] font-semibold">
+                      3
+                    </div>
+
+                    <div>
+                      <h3 className="text-white font-medium">Review Matches</h3>
+
+                      <p className="text-sm text-[#8c909f] mt-1">
+                        Review relevant candidates and continue the hiring
+                        process.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </main>
         </main>
       ) : (
         <>
@@ -764,8 +951,7 @@ export default function DashboardPage() {
                     </h2>
 
                     <p className="mt-1 text-sm text-[#8d99aa]">
-                      Most frequently detected skills across parsed
-                      resumes.
+                      Most frequently detected skills across parsed resumes.
                     </p>
                   </div>
 
@@ -773,9 +959,7 @@ export default function DashboardPage() {
                     {topSkills.length > 0 ? (
                       topSkills.map(([skill, count]) => {
                         const percentage =
-                          totalParsed > 0
-                            ? (count / totalParsed) * 100
-                            : 0;
+                          totalParsed > 0 ? (count / totalParsed) * 100 : 0;
 
                         return (
                           <div key={skill}>
@@ -785,10 +969,7 @@ export default function DashboardPage() {
                               </span>
 
                               <span className="text-xs text-[#8d99aa]">
-                                {count}{" "}
-                                {count === 1
-                                  ? "resume"
-                                  : "resumes"}
+                                {count} {count === 1 ? "resume" : "resumes"}
                               </span>
                             </div>
 
@@ -829,9 +1010,7 @@ export default function DashboardPage() {
                     href="/upload"
                     className="md:hidden flex items-center justify-center p-4 bg-[#4d8eff] text-[#00285d] rounded-full active:scale-90 transition-all"
                   >
-                    <span className="material-symbols-outlined">
-                      add
-                    </span>
+                    <span className="material-symbols-outlined">add</span>
                   </Link>
                 </div>
 
@@ -855,33 +1034,26 @@ export default function DashboardPage() {
                         error
                       </span>
 
+                      <p className="text-[#c2c6d6] mt-4">{error}</p>
+                    </div>
+                  )}
+
+                  {!loading && !error && resumes.length === 0 && (
+                    <div className="glass-card rounded-xl p-12 text-center">
+                      <span className="material-symbols-outlined text-[#8c909f] text-[48px]">
+                        description
+                      </span>
+
                       <p className="text-[#c2c6d6] mt-4">
-                        {error}
+                        No resumes have been parsed yet.
                       </p>
                     </div>
                   )}
 
                   {!loading &&
                     !error &&
-                    resumes.length === 0 && (
-                      <div className="glass-card rounded-xl p-12 text-center">
-                        <span className="material-symbols-outlined text-[#8c909f] text-[48px]">
-                          description
-                        </span>
-
-                        <p className="text-[#c2c6d6] mt-4">
-                          No resumes have been parsed yet.
-                        </p>
-                      </div>
-                    )}
-
-                  {!loading &&
-                    !error &&
                     resumes.map((resume) => (
-                      <CandidateCard
-                        key={resume.id}
-                        candidate={resume}
-                      />
+                      <CandidateCard key={resume.id} candidate={resume} />
                     ))}
                 </section>
 
