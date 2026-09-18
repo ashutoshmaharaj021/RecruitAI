@@ -11,6 +11,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -65,14 +66,15 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-[#111318] text-white flex items-center justify-center px-6">
-      <div className="w-full max-w-md">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
 
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2"
-          >
+          <Link href="/" className="inline-flex items-center gap-2">
             <span className="material-symbols-outlined text-[#adc6ff] text-3xl">
               clinical_notes
             </span>
@@ -82,9 +84,7 @@ export default function LoginPage() {
             </span>
           </Link>
 
-          <h1 className="text-3xl font-semibold mt-8">
-            Welcome back
-          </h1>
+          <h1 className="text-3xl font-semibold mt-8">Welcome back</h1>
 
           <p className="text-[#8c909f] mt-2">
             Sign in to access your RecruitAI workspace.
@@ -93,9 +93,7 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <div className="bg-[#0a0c10] border border-[#1E293B] rounded-2xl p-8 shadow-2xl">
-
           <form onSubmit={handleLogin} className="space-y-6">
-
             {/* Email */}
             <div>
               <label
@@ -126,25 +124,36 @@ export default function LoginPage() {
                 Password
               </label>
 
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Enter your password"
-                required
-                minLength={8}
-                autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-xl bg-[#111318] border border-[#424754] text-white placeholder-[#646977] outline-none focus:border-[#adc6ff] transition-colors"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  minLength={8}
+                  autoComplete="current-password"
+                  className="w-full px-4 py-3 pr-12 rounded-xl bg-[#111318] border border-[#424754] text-white placeholder-[#646977] outline-none focus:border-[#adc6ff] transition-colors"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c909f] hover:text-[#adc6ff] transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  <span className="material-symbols-outlined text-[22px]">
+                    {showPassword ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Error */}
             {error && (
               <div className="rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 px-4 py-3">
-                <p className="text-sm text-[#ffb4ab]">
-                  {error}
-                </p>
+                <p className="text-sm text-[#ffb4ab]">{error}</p>
               </div>
             )}
 
@@ -156,7 +165,6 @@ export default function LoginPage() {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
-
           </form>
 
           {/* Register */}
@@ -171,7 +179,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-
         </div>
 
         {/* Back */}
@@ -183,7 +190,6 @@ export default function LoginPage() {
             ← Back to RecruitAI
           </Link>
         </div>
-
       </div>
     </main>
   );

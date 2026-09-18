@@ -8,6 +8,7 @@ function TopAppBar() {
   return (
     <header className="fixed top-0 left-0 w-full h-16 z-50 border-b border-[#252a35] bg-[#0b0e14]/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto h-full px-6 md:px-8 flex items-center justify-between">
+
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-9 h-9 rounded-xl bg-[#4d8eff]/10 border border-[#4d8eff]/20 flex items-center justify-center group-hover:bg-[#4d8eff]/20 transition-colors">
@@ -52,17 +53,34 @@ function TopAppBar() {
           </span>
         </nav>
 
-        {/* CTA */}
-        <Link
-          href="/upload"
-          className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[#adc6ff] text-[#07172f] text-sm font-semibold hover:bg-white transition-colors"
-        >
-          Upload Resume
+        {/* Authentication + CTA */}
+        <div className="flex items-center gap-3">
 
-          <span className="material-symbols-outlined text-[18px]">
-            arrow_forward
-          </span>
-        </Link>
+          {/* Login */}
+          <Link
+            href="/login"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg border border-[#343b49] bg-[#11151d]/70 text-white text-sm font-semibold hover:bg-[#191e28] transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              login
+            </span>
+
+            Login
+          </Link>
+
+          {/* CTA */}
+          <Link
+            href="/upload"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[#adc6ff] text-[#07172f] text-sm font-semibold hover:bg-white transition-colors"
+          >
+            Upload Resume
+
+            <span className="material-symbols-outlined text-[18px]">
+              arrow_forward
+            </span>
+          </Link>
+
+        </div>
       </div>
     </header>
   );
