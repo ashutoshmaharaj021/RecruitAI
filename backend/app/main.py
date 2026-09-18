@@ -1,10 +1,12 @@
 from fastapi import FastAPI  # type: ignore[import]
 from app.routes.upload import router as upload_router
 from app.routes.auth import router as auth_router
+from app.routes.jobs import router as jobs_router
 
 from app.database.db import engine, Base
 from app.models.resume_model import Resume
 from app.models.user_model import User
+from app.models.job_model import Job
 
 from fastapi.middleware.cors import CORSMiddleware
      
@@ -22,6 +24,7 @@ app.add_middleware(
 
 app.include_router(upload_router)
 app.include_router(auth_router)
+app.include_router(jobs_router)
 
 @app.get("/")
 def root():
