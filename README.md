@@ -1,31 +1,115 @@
 # AI Resume Parser
 
-An AI/NLP-powered full-stack web application that lets users upload PDF resumes, automatically extracts key candidate information (name, email, phone, and skills), and stores the structured data in PostgreSQL.
+
+An AI/NLP-powered full-stack recruitment platform that allows candidates to upload and manage resumes while recruiters can create job descriptions, search and rank candidates, compare required skills against resumes, and view candidate profiles.
+
+The application combines resume parsing, authentication, role-based access control, job management, and skill-based resume-job matching into a single full-stack system.
 
 ---
 
 ## Overview
 
-**AI Resume Parser** is a full-stack application built as a working portfolio/academic project. Users upload a PDF resume through a Next.js frontend. The FastAPI backend extracts raw text from the PDF, parses it using regular expressions and spaCy to identify candidate details, and stores the structured result in a PostgreSQL database. The parsed data is then returned to the frontend for display.
+**AI Resume Parser** is a full-stack portfolio/academic project built using Next.js, FastAPI, PostgreSQL, and NLP-based resume processing.
 
-This is a functional demonstration of an end-to-end resume parsing pipeline, not an enterprise-scale production system.
+The platform supports two primary user roles:
 
+- **Candidate**
+- **Recruiter**
+
+### Candidate Workflow
+
+Candidates can:
+
+- Register and log in
+- Upload PDF resumes
+- Automatically extract resume information
+- View parsed resume data
+- Manage their resume records
+- View extracted skills
+- Match their resume against jobs
+
+### Recruiter Workflow
+
+Recruiters can:
+
+- Register and log in
+- Create job descriptions
+- Define required skills for a job
+- View their created jobs
+- Delete their jobs
+- Find candidates for a specific job
+- Rank candidates based on skill matching
+- View matched and missing skills
+- View individual candidate profiles
+- View candidate contact information and extracted skills
+
+The current matching system uses **skill-based matching**. Semantic embeddings and advanced AI matching can be added as future enhancements.
+
+This is a functional portfolio/academic project and is not intended to represent an enterprise-scale production recruitment platform.
 
 ---
 
 ## Current Features
 
-- PDF resume upload from the frontend
+### Authentication & Authorization
+
+- User registration
+- User login
+- JWT-based authentication
+- Password hashing using Argon2
+- Protected API endpoints
+- Candidate and recruiter roles
+- Role-based access control (RBAC)
+- Recruiter-only job management
+- Recruiter-only candidate ranking
+- Candidate ownership protection
+- Job ownership protection
+- Unauthorized requests return appropriate HTTP status codes
+
+---
+
+### Resume Management
+
+- PDF resume upload
 - Resume text extraction using PyMuPDF
 - Resume parsing using spaCy and regular expressions
-- Candidate name, Email, Phone Number, Skills extraction
-- Parsed data displayed on the frontend
+- Candidate name extraction
+- Email extraction
+- Phone number extraction
+- Skills extraction
+- Raw resume text storage
 - Parsed resume data stored in PostgreSQL
-- Stored resume records viewable via PostgreSQL/pgAdmin
-- Frontend-to-backend communication using Axios
-- FastAPI REST API
-- CORS configuration
-- Responsive frontend UI (Next.js, TypeScript, Tailwind CSS, ShadCN UI)
+- Resume records displayed in the frontend
+- Original PDF viewing support
+
+---
+
+### Job Management
+
+Recruiters can:
+
+- Create jobs
+- Add job title
+- Add company name
+- Add job description
+- Define required skills
+- View their own jobs
+- Delete their jobs
+
+Jobs are associated with the recruiter who created them.
+
+---
+
+### Resume → Job Matching
+
+The application includes a skill-based matching engine that compares:
+
+```text
+Candidate Resume Skills
+          ↓
+     Matching Engine
+          ↓
+Required Job Skills
 
 ---
 
