@@ -60,8 +60,7 @@ export default function JobsPage() {
         }
 
         setError(
-          err.response?.data?.detail ||
-            "Unable to load your job descriptions."
+          err.response?.data?.detail || "Unable to load your job descriptions.",
         );
       } finally {
         setLoading(false);
@@ -73,7 +72,7 @@ export default function JobsPage() {
 
   const handleDelete = async (jobId: number) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this job description?"
+      "Are you sure you want to delete this job description?",
     );
 
     if (!confirmed) return;
@@ -84,9 +83,7 @@ export default function JobsPage() {
 
       await api.delete(`/jobs/${jobId}`);
 
-      setJobs((currentJobs) =>
-        currentJobs.filter((job) => job.id !== jobId)
-      );
+      setJobs((currentJobs) => currentJobs.filter((job) => job.id !== jobId));
     } catch (err: any) {
       console.error("Failed to delete job:", err);
 
@@ -96,8 +93,7 @@ export default function JobsPage() {
       }
 
       setError(
-        err.response?.data?.detail ||
-          "Unable to delete the job description."
+        err.response?.data?.detail || "Unable to delete the job description.",
       );
     } finally {
       setDeletingId(null);
@@ -194,10 +190,7 @@ export default function JobsPage() {
               href="/jobs/create"
               className="hidden md:flex items-center gap-1 bg-[#adc6ff] text-[#002e6a] px-4 py-2 rounded-xl text-[13px] font-medium active:scale-95 transition-transform glow-button"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                add
-              </span>
-
+              <span className="material-symbols-outlined text-[18px]">add</span>
               Create Job
             </Link>
 
@@ -212,7 +205,6 @@ export default function JobsPage() {
         {/* Main */}
         <main className="pt-24 pb-16 px-8 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-10">
-
             {/* Page Header */}
             <section>
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
@@ -237,7 +229,6 @@ export default function JobsPage() {
                   <span className="material-symbols-outlined text-[19px]">
                     add
                   </span>
-
                   Create Job
                 </Link>
               </div>
@@ -251,9 +242,7 @@ export default function JobsPage() {
                     error
                   </span>
 
-                  <p className="text-sm text-[#ffb4ab]">
-                    {error}
-                  </p>
+                  <p className="text-sm text-[#ffb4ab]">{error}</p>
                 </div>
               </div>
             )}
@@ -296,7 +285,6 @@ export default function JobsPage() {
                   <span className="material-symbols-outlined text-[18px]">
                     add
                   </span>
-
                   Create Your First Job
                 </Link>
               </div>
@@ -421,6 +409,15 @@ export default function JobsPage() {
                         </div>
 
                         <button
+                          onClick={() =>
+                            router.push(`/jobs/${job.id}/candidates`)
+                          }
+                          className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                        >
+                          Find Candidates
+                        </button>
+
+                        <button
                           onClick={() => handleDelete(job.id)}
                           disabled={deletingId === job.id}
                           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium text-[#ffb4ab] hover:bg-[#ffb4ab]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -429,9 +426,7 @@ export default function JobsPage() {
                             delete
                           </span>
 
-                          {deletingId === job.id
-                            ? "Deleting..."
-                            : "Delete"}
+                          {deletingId === job.id ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     </div>
@@ -439,7 +434,6 @@ export default function JobsPage() {
                 })}
               </section>
             )}
-
           </div>
         </main>
 
@@ -449,39 +443,27 @@ export default function JobsPage() {
             href="/dashboard"
             className="flex flex-col items-center text-[#c2c6d6]"
           >
-            <span className="material-symbols-outlined">
-              dashboard
-            </span>
+            <span className="material-symbols-outlined">dashboard</span>
 
-            <span className="text-[11px] mt-1">
-              Dashboard
-            </span>
+            <span className="text-[11px] mt-1">Dashboard</span>
           </Link>
 
           <Link
             href="/jobs"
             className="flex flex-col items-center text-[#adc6ff]"
           >
-            <span className="material-symbols-outlined">
-              work
-            </span>
+            <span className="material-symbols-outlined">work</span>
 
-            <span className="text-[11px] mt-1">
-              Jobs
-            </span>
+            <span className="text-[11px] mt-1">Jobs</span>
           </Link>
 
           <Link
             href="/jobs/create"
             className="flex flex-col items-center text-[#c2c6d6]"
           >
-            <span className="material-symbols-outlined">
-              add_circle
-            </span>
+            <span className="material-symbols-outlined">add_circle</span>
 
-            <span className="text-[11px] mt-1">
-              Create
-            </span>
+            <span className="text-[11px] mt-1">Create</span>
           </Link>
         </nav>
       </div>
