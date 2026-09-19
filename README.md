@@ -5,7 +5,6 @@ An AI/NLP-powered full-stack recruitment platform that allows candidates to uplo
 
 The application combines resume parsing, authentication, role-based access control, job management, and skill-based resume-job matching into a single full-stack system.
 
----
 
 ## Overview
 
@@ -47,7 +46,6 @@ The current matching system uses **skill-based matching**. Semantic embeddings a
 
 This is a functional portfolio/academic project and is not intended to represent an enterprise-scale production recruitment platform.
 
----
 
 ## Current Features
 
@@ -128,7 +126,6 @@ flowchart TD
     G --> B
 ```
 
----
 
 ## How It Works
 
@@ -140,7 +137,6 @@ flowchart TD
 6. The structured data is returned to the frontend as JSON and displayed to the user.
 7. User can also see the original PDF of the parsed resume from the parsed resume section
 
----
 
 ## Tech Stack
 
@@ -178,7 +174,6 @@ flowchart TD
 | SQLAlchemy | ORM |
 | psycopg2 | PostgreSQL adapter |
 
----
 
 
 ## Database Schema
@@ -196,7 +191,6 @@ PostgreSQL is used for persistent storage, with SQLAlchemy as the ORM.
 | `skills` | Extracted skills |
 | `raw_text` | Extracted resume text |
 
----
 
 ## API Overview
 
@@ -217,7 +211,6 @@ The backend is organized into the following areas:
 
 Interactive API documentation is automatically available via FastAPI at `/docs` once the backend is running.
 
----
 
 ## Local Installation (Windows)
 
@@ -285,19 +278,16 @@ npm run dev
 
 Both servers must be running simultaneously for the application to work end to end.
 
----
 
 ## Contributing
 
 This project is currently developed as a personal portfolio/academic project. Contribution guidelines will be added if the project opens up to external contributions in the future.
 
----
 
 ## License
 
 Licensed under the MIT License
 
----
 
 ## Author
 
