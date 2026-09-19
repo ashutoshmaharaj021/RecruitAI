@@ -232,7 +232,6 @@ npm install
 npm run dev
 ```
 
----
 
 ## Environment Variables
 
@@ -250,7 +249,6 @@ copy backend\.env.example backend\.env
 
 Do not commit real credentials or passwords to the repository.
 
----
 
 ## Running the Application
 
