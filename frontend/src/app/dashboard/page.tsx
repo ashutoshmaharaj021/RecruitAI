@@ -205,13 +205,17 @@ function TopNav() {
           Quick Upload
         </Link>
 
-        <div className="w-8 h-8 rounded-full overflow-hidden border border-[#424754]">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj4sgkLtVeNsAhlNNCtZ4ic-6UoNmL6gs3sK0aiqmdCOiHhRAZiWsv1vrAi_IvMEAClFHLOqpcZCFo-e7fwmQVqPrDj-ufIzLfUtjL4pGdZT_F9f9eGRTMDJO6PmSIeO4m0bbUgl2Drfucj4mbjyFmm9ChNBGIDQUXgO1zKxx1Mu6KgJ9Rjkghjf3wOK5UQivnpi3hQbriJe_e20lI29zqBMemwO4lOuhmyO0mRjqoA7D1Mi2im08-GqodnHaGcm6Mzm3VxqVRLqY"
-            alt="User profile"
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* My Profile */}
+        <Link
+          href="/profile"
+          title="My Profile"
+          aria-label="My Profile"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#424754] bg-[#1a1d24] text-[#c2c6d6] transition-all hover:border-[#adc6ff]/50 hover:bg-[#4d8eff]/10 hover:text-[#adc6ff] active:scale-95"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            account_circle
+          </span>
+        </Link>
       </div>
     </nav>
   );
