@@ -4,11 +4,13 @@ from app.routes.auth import router as auth_router
 from app.routes.jobs import router as jobs_router
 from app.routes.matching import router as matching_router
 from app.routes.candidate_ranking import router as candidate_ranking_router
+from app.routes.profile import router as profile_router
 
 from app.database.db import engine, Base
 from app.models.resume_model import Resume
 from app.models.user_model import User
 from app.models.job_model import Job
+from app.models.candidate_profile_model import CandidateProfile
 
 from fastapi.middleware.cors import CORSMiddleware
      
@@ -29,6 +31,7 @@ app.include_router(auth_router)
 app.include_router(jobs_router)
 app.include_router(matching_router)
 app.include_router(candidate_ranking_router)
+app.include_router(profile_router)
 
 @app.get("/")
 def root():
