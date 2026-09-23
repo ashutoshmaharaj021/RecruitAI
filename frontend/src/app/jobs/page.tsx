@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import api from "@/lib/api";
-import { getStoredUser, isLoggedIn } from "@/lib/auth";
+import { getStoredUser, isLoggedIn, logout } from "@/lib/auth";
 
 interface Job {
   id: number;
@@ -19,6 +19,10 @@ interface Job {
 
 export default function JobsPage() {
   const router = useRouter();
+  const handlelogout = () => {
+    logout();
+    router.replace("/");
+  };
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,10 +198,30 @@ export default function JobsPage() {
               Create Job
             </Link>
 
-            <div className="w-8 h-8 rounded-full bg-[#1a1c20] border border-[#424754] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[#adc6ff] text-[20px]">
-                person
-              </span>
+            <div className="flex items-center gap-3">
+              {/* My Profile */}
+              <Link
+                href="/profile"
+                title="My Profile"
+                aria-label="My Profile"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#424754] bg-[#1a1c20] text-[#adc6ff] transition-all hover:border-[#adc6ff]/50 hover:bg-[#4d8eff]/10 active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  account_circle
+                </span>
+              </Link>
+
+              {/* Logout */}
+              <button
+                onClick={handlelogout}
+                title="Logout"
+                aria-label="Logout"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-red-400/10 bg-red-500/5 text-red-300 transition-all hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200 active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  logout
+                </span>
+              </button>
             </div>
           </div>
         </nav>
