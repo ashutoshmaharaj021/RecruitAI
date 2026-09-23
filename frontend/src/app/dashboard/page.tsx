@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import api from "@/lib/api";
-import { getStoredUser, isLoggedIn, type UserRole } from "@/lib/auth";
+import { getStoredUser, isLoggedIn, logout, type UserRole } from "@/lib/auth";
 
 interface Candidate {
   id: number;
@@ -151,7 +151,7 @@ function getSkills(skills: string) {
     .filter(Boolean);
 }
 
-function TopNav() {
+function TopNav({ onLogout }: { onLogout: () => void }) {
   return (
     <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
       <Link href="/" className="flex items-center gap-1">
@@ -205,17 +205,32 @@ function TopNav() {
           Quick Upload
         </Link>
 
-        {/* My Profile */}
-        <Link
-          href="/profile"
-          title="My Profile"
-          aria-label="My Profile"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#424754] bg-[#1a1d24] text-[#c2c6d6] transition-all hover:border-[#adc6ff]/50 hover:bg-[#4d8eff]/10 hover:text-[#adc6ff] active:scale-95"
-        >
-          <span className="material-symbols-outlined text-[20px]">
-            account_circle
-          </span>
-        </Link>
+        {/* Profile + Logout */}
+        <div className="flex items-center gap-3">
+          {/* My Profile */}
+          <Link
+            href="/profile"
+            title="My Profile"
+            aria-label="My Profile"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#424754] bg-[#1a1d24] text-[#c2c6d6] transition-all hover:border-[#adc6ff]/50 hover:bg-[#4d8eff]/10 hover:text-[#adc6ff] active:scale-95"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              account_circle
+            </span>
+          </Link>
+
+          {/* Logout */}
+          <button
+            onClick={onLogout}
+            title="Logout"
+            aria-label="Logout"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-red-400/10 bg-red-500/5 text-red-300 transition-all hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200 active:scale-95"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              logout
+            </span>
+          </button>
+        </div>
       </div>
     </nav>
   );
@@ -477,6 +492,10 @@ function Footer() {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const handleLogout = () => {
+    logout();
+    router.replace("/");
+  };
 
   const [resumes, setResumes] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -681,10 +700,30 @@ export default function DashboardPage() {
                 Create Job
               </Link>
 
-              <div className="w-9 h-9 rounded-full bg-[#1e293b] border border-[#424754] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[#adc6ff]">
-                  person
-                </span>
+              <div className="flex items-center gap-3">
+                {/* My Profile */}
+                <Link
+                  href="/profile"
+                  title="My Profile"
+                  aria-label="My Profile"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#424754] bg-[#1e293b] text-[#adc6ff] transition-all hover:border-[#adc6ff]/50 hover:bg-[#4d8eff]/10 active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    account_circle
+                  </span>
+                </Link>
+
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  title="Logout"
+                  aria-label="Logout"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-red-400/10 bg-red-500/5 text-red-300 transition-all hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200 active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    logout
+                  </span>
+                </button>
               </div>
             </div>
           </nav>
@@ -935,7 +974,7 @@ export default function DashboardPage() {
           `}</style>
 
           <div className="bg-[#111318] text-white min-h-screen">
-            <TopNav />
+            <TopNav onLogout={handleLogout} />
             <Sidebar />
 
             <main className="md:ml-[240px] pt-24 pb-16 px-8 min-h-screen">
