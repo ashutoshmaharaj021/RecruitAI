@@ -1050,7 +1050,7 @@ export default function DashboardPage() {
                   {loading && (
                     <div className="glass-card rounded-xl p-12 text-center">
                       <span className="material-symbols-outlined text-[#adc6ff] text-[48px] animate-spin">
-                        progress_activity
+                        Progress_activity
                       </span>
 
                       <p className="text-[#c2c6d6] mt-4">
@@ -1072,7 +1072,7 @@ export default function DashboardPage() {
                   {!loading && !error && resumes.length === 0 && (
                     <div className="glass-card rounded-xl p-12 text-center">
                       <span className="material-symbols-outlined text-[#8c909f] text-[48px]">
-                        description
+                        Description
                       </span>
 
                       <p className="text-[#c2c6d6] mt-4">
