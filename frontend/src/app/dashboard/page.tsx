@@ -687,6 +687,13 @@ export default function DashboardPage() {
               >
                 Jobs
               </Link>
+
+              <Link
+                href="/candidates"
+                className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
+              >
+                Candidates
+              </Link>
             </div>
 
             <div className="flex items-center gap-3">
