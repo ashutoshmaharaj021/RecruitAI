@@ -172,7 +172,7 @@ export default function JobsPage() {
           </Link>
 
           {/* Navigation */}
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-8">
             <Link
               href="/dashboard"
               className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
@@ -185,6 +185,13 @@ export default function JobsPage() {
               className="text-[15px] text-[#adc6ff] font-medium"
             >
               Jobs
+            </Link>
+
+            <Link
+              href="/candidates"
+              className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors"
+            >
+              Candidates
             </Link>
           </div>
 
