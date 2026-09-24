@@ -8,6 +8,7 @@ from app.schemas.auth import (
     RegisterResponse,
     LoginRequest,
     LoginResponse,
+    UserResponse,
 )
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
@@ -104,3 +105,42 @@ def get_current_user_info(
         "email": current_user.email,
         "role": current_user.role,
     }
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(
+    user_data: RegisterRequest,
+    db: Session = Depends(get_db),
+):
+    # Check whether email already exists
+    existing_user = (
+        db.query(User)
+        .filter(User.email == user_data.email)
+        .first()
+    )
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email is already registered",
+        )
+
+    # Only allow valid application roles
+    if user_data.role not in {"candidate", "recruiter"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Role must be either candidate or recruiter",
+        )
+
+    # Create new user
+    new_user = User(
+        name=user_data.name,
+        email=user_data.email,
+        password_hash=hash_password(user_data.password),
+        role=user_data.role,
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user

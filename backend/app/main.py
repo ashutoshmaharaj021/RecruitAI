@@ -11,6 +11,7 @@ from app.models.resume_model import Resume
 from app.models.user_model import User
 from app.models.job_model import Job
 from app.models.candidate_profile_model import CandidateProfile
+from app.routes import auth
 
 from fastapi.middleware.cors import CORSMiddleware
      
@@ -35,5 +36,5 @@ app.include_router(profile_router)
 
 @app.get("/")
 def root():
-    return {"message": "Resume Parser API Running"}
+    return {"message": "Welcome to Resume Parser API!"}
 
