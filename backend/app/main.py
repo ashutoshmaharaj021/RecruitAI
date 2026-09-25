@@ -12,6 +12,7 @@ from app.models.resume_model import Resume
 from app.models.user_model import User
 from app.models.job_model import Job
 from app.models.candidate_profile_model import CandidateProfile
+from app.models.recruiter_profile_model import RecruiterProfile
 from app.routes import auth
 from app.routes import recruiter_candidates
 

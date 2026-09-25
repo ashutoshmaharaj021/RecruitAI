@@ -28,6 +28,20 @@ interface CandidateProfile {
   portfolio_url: string | null;
 }
 
+interface RecruiterProfile {
+  user_id: number;
+  name: string;
+  email: string;
+  role: string;
+
+  company: string | null;
+  job_title: string | null;
+  location: string | null;
+  bio: string | null;
+  company_website: string | null;
+  linkedin_url: string | null;
+}
+
 interface ProfileForm {
   phone: string;
   date_of_birth: string;
@@ -44,6 +58,15 @@ interface ProfileForm {
   github_url: string;
   linkedin_url: string;
   portfolio_url: string;
+}
+
+interface RecruiterProfileForm {
+  company: string;
+  job_title: string;
+  location: string;
+  bio: string;
+  company_website: string;
+  linkedin_url: string;
 }
 
 function UserIcon() {
@@ -96,16 +119,8 @@ function ResumeIcon() {
         strokeLinejoin="round"
         d="M6 3h9l4 4v14H6V3Z"
       />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M14 3v5h5"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 13h6M9 17h6"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6M9 17h6" />
     </svg>
   );
 }
@@ -119,21 +134,9 @@ function UploadIcon() {
       strokeWidth="1.8"
       className="h-5 w-5"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 16V4"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="m7 9 5-5 5 5"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M5 20h14"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m7 9 5-5 5 5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 20h14" />
     </svg>
   );
 }
@@ -160,8 +163,9 @@ function SettingsIcon() {
 export default function ProfilePage() {
   const router = useRouter();
 
-  const [profile, setProfile] =
-    useState<CandidateProfile | null>(null);
+  const [profile, setProfile] = useState<
+    CandidateProfile | RecruiterProfile | null
+  >(null);
 
   const [form, setForm] = useState<ProfileForm>({
     phone: "",
@@ -179,6 +183,15 @@ export default function ProfilePage() {
     portfolio_url: "",
   });
 
+  const [recruiterForm, setRecruiterForm] = useState<RecruiterProfileForm>({
+    company: "",
+    job_title: "",
+    location: "",
+    bio: "",
+    company_website: "",
+    linkedin_url: "",
+  });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -192,43 +205,55 @@ export default function ProfilePage() {
       return;
     }
 
-    if (user.role !== "candidate") {
+    if (user.role !== "candidate" && user.role !== "recruiter") {
       router.push("/dashboard");
       return;
     }
 
-    fetchProfile();
+    fetchProfile(user.role);
   }, []);
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (userRole: "candidate" | "recruiter") => {
     try {
       setLoading(true);
       setError("");
 
-      const response =
-        await api.get<CandidateProfile>("/profile");
+      const response = await api.get<CandidateProfile | RecruiterProfile>(
+        "/profile",
+      );
 
-      const data = response.data;
+      setProfile(response.data);
 
-      setProfile(data);
+      if (userRole === "candidate") {
+        const candidate = response.data as CandidateProfile;
 
-      setForm({
-        phone: data.phone || "",
-        date_of_birth: data.date_of_birth || "",
-        location: data.location || "",
-        bio: data.bio || "",
-        college: data.college || "",
-        course: data.course || "",
-        branch: data.branch || "",
-        current_year:
-          data.current_year?.toString() || "",
-        graduation_year:
-          data.graduation_year?.toString() || "",
-        cgpa: data.cgpa?.toString() || "",
-        github_url: data.github_url || "",
-        linkedin_url: data.linkedin_url || "",
-        portfolio_url: data.portfolio_url || "",
-      });
+        setForm({
+          phone: candidate.phone ?? "",
+          date_of_birth: candidate.date_of_birth ?? "",
+          location: candidate.location ?? "",
+          bio: candidate.bio ?? "",
+          college: candidate.college ?? "",
+          course: candidate.course ?? "",
+          branch: candidate.branch ?? "",
+          current_year: candidate.current_year ?? "",
+          graduation_year: candidate.graduation_year ?? "",
+          cgpa: candidate.cgpa ?? "",
+          github_url: candidate.github_url ?? "",
+          linkedin_url: candidate.linkedin_url ?? "",
+          portfolio_url: candidate.portfolio_url ?? "",
+        });
+      } else {
+        const recruiter = response.data as RecruiterProfile;
+
+        setRecruiterForm({
+          company: recruiter.company ?? "",
+          job_title: recruiter.job_title ?? "",
+          location: recruiter.location ?? "",
+          bio: recruiter.bio ?? "",
+          company_website: recruiter.company_website ?? "",
+          linkedin_url: recruiter.linkedin_url ?? "",
+        });
+      }
     } catch (err: any) {
       if (err.response?.status === 401) {
         router.push("/login");
@@ -240,29 +265,61 @@ export default function ProfilePage() {
         return;
       }
 
-      setError(
-        err.response?.data?.detail ||
-          "Failed to load profile."
-      );
+      setError(err.response?.data?.detail || "Failed to load profile.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (
-    field: keyof ProfileForm,
-    value: string
-  ) => {
+  const handleChange = (field: keyof ProfileForm, value: string) => {
     setForm((previous) => ({
       ...previous,
       [field]: value,
     }));
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
+  const handleRecruiterChange = (
+    field: keyof RecruiterProfileForm,
+    value: string,
   ) => {
+    setRecruiterForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (profile?.role === "recruiter") {
+  try {
+    setSaving(true);
+
+    const response = await api.put<RecruiterProfile>(
+      "/profile",
+      {
+        company: recruiterForm.company || null,
+        job_title: recruiterForm.job_title || null,
+        location: recruiterForm.location || null,
+        bio: recruiterForm.bio || null,
+        company_website:
+          recruiterForm.company_website || null,
+        linkedin_url:
+          recruiterForm.linkedin_url || null,
+      }
+    );
+
+    setProfile(response.data);
+    alert("Profile updated successfully");
+  } catch (error) {
+    console.error("Failed to update recruiter profile:", error);
+    alert("Failed to update profile");
+  } finally {
+    setSaving(false);
+  }
+
+  return;
+}
 
     try {
       setSaving(true);
@@ -279,28 +336,20 @@ export default function ProfilePage() {
         course: form.course || null,
         branch: form.branch || null,
 
-        current_year: form.current_year
-          ? Number(form.current_year)
-          : null,
+        current_year: form.current_year ? Number(form.current_year) : null,
 
         graduation_year: form.graduation_year
           ? Number(form.graduation_year)
           : null,
 
-        cgpa: form.cgpa
-          ? Number(form.cgpa)
-          : null,
+        cgpa: form.cgpa ? Number(form.cgpa) : null,
 
         github_url: form.github_url || null,
         linkedin_url: form.linkedin_url || null,
         portfolio_url: form.portfolio_url || null,
       };
 
-      const response =
-        await api.put<CandidateProfile>(
-          "/profile",
-          payload
-        );
+      const response = await api.put<CandidateProfile>("/profile", payload);
 
       setProfile(response.data);
 
@@ -312,24 +361,19 @@ export default function ProfilePage() {
       }
 
       if (err.response?.status === 403) {
-        setError(
-          "You do not have permission to update this profile."
-        );
+        setError("You do not have permission to update this profile.");
         return;
       }
 
       if (err.response?.status === 422) {
         setError(
           err.response?.data?.detail?.[0]?.msg ||
-            "Please check the information you entered."
+            "Please check the information you entered.",
         );
         return;
       }
 
-      setError(
-        err.response?.data?.detail ||
-          "Failed to update profile."
-      );
+      setError(err.response?.data?.detail || "Failed to update profile.");
     } finally {
       setSaving(false);
     }
@@ -338,9 +382,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#111318] text-white">
-        <div className="text-sm text-[#8c909f]">
-          Loading profile...
-        </div>
+        <div className="text-sm text-[#8c909f]">Loading profile...</div>
       </div>
     );
   }
@@ -349,9 +391,7 @@ export default function ProfilePage() {
     return null;
   }
 
-  const initials = profile.name
-    ? profile.name.charAt(0).toUpperCase()
-    : "U";
+  const initials = profile.name ? profile.name.charAt(0).toUpperCase() : "U";
 
   return (
     <>
@@ -372,22 +412,17 @@ export default function ProfilePage() {
       `}</style>
 
       <div className="recruitai-profile min-h-screen bg-[#111318] text-white selection:bg-[#4d8eff] selection:text-[#001a42]">
-
         {/* =========================================================
             TOP NAVBAR
         ========================================================= */}
 
         <header className="fixed left-0 right-0 top-0 z-50 h-16 border-b border-[#424754] bg-[#111318]/90 backdrop-blur-xl">
-
           <div className="flex h-full items-center justify-between px-8">
-
             {/* Logo */}
             <button
               onClick={() => router.push("/dashboard")}
               className="flex items-center gap-2"
             >
-    
-
               <span className="text-2xl font-bold tracking-tighter text-white">
                 RecruitAI
               </span>
@@ -395,14 +430,12 @@ export default function ProfilePage() {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-
               {/* Quick Upload */}
               <button
                 onClick={() => router.push("/uploads")}
                 className="flex items-center gap-2 rounded-xl bg-[#adc6ff] px-4 py-2 text-[13px] font-medium text-[#002e6a] shadow-[0_0_20px_rgba(77,142,255,0.12)] transition hover:bg-white active:scale-95"
               >
                 <UploadIcon />
-
                 Quick Upload
               </button>
 
@@ -415,20 +448,16 @@ export default function ProfilePage() {
               >
                 <UserIcon />
               </button>
-
             </div>
           </div>
         </header>
-
 
         {/* =========================================================
             SIDEBAR
         ========================================================= */}
 
         <aside className="fixed bottom-0 left-0 top-16 z-40 hidden h-[calc(100vh-4rem)] w-[240px] flex-col border-r border-[#424754] bg-[#0c0e12] px-4 pt-6 md:flex">
-
           <nav className="space-y-1">
-
             {/* Dashboard */}
             <button
               onClick={() => router.push("/dashboard")}
@@ -438,7 +467,6 @@ export default function ProfilePage() {
 
               <span>Dashboard</span>
             </button>
-
 
             {/* Resumes */}
             <button
@@ -450,7 +478,6 @@ export default function ProfilePage() {
               <span>Resumes</span>
             </button>
 
-
             {/* Uploads */}
             <button
               onClick={() => router.push("/uploads")}
@@ -461,7 +488,6 @@ export default function ProfilePage() {
               <span>Uploads</span>
             </button>
 
-
             {/* Settings */}
             <button
               onClick={() => router.push("/settings")}
@@ -471,40 +497,29 @@ export default function ProfilePage() {
 
               <span>Settings</span>
             </button>
-
           </nav>
-
 
           {/* Signed-in information */}
           <div className="absolute bottom-5 left-4 right-4 rounded-xl border border-[#252a35] bg-white/[0.03] p-3">
-
-            <p className="text-xs text-[#646977]">
-              Signed in as
-            </p>
+            <p className="text-xs text-[#646977]">Signed in as</p>
 
             <p className="mt-1 truncate text-sm text-[#c2c6d6]">
               {profile.email}
             </p>
-
           </div>
-
         </aside>
-
 
         {/* =========================================================
             MAIN CONTENT
         ========================================================= */}
 
         <main className="ml-0 min-h-screen pt-16 md:ml-[240px]">
-
           <div className="mx-auto max-w-6xl px-6 py-10 md:px-8">
-
             {/* =====================================================
                 PAGE HEADER
             ===================================================== */}
 
             <div className="mb-8">
-
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#adc6ff]">
                 Account
               </p>
@@ -514,39 +529,27 @@ export default function ProfilePage() {
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[#8c909f]">
-                Manage your personal, educational and
-                professional information.
+                Manage your account and professional information.
               </p>
-
             </div>
 
-
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6"
-            >
-
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* =================================================
                   PROFILE SUMMARY
               ================================================= */}
 
               <section className="overflow-hidden rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] backdrop-blur-xl">
-
                 <div className="h-24 bg-gradient-to-r from-[#4d8eff]/10 via-[#adc6ff]/5 to-transparent" />
 
                 <div className="-mt-10 px-7 pb-7">
-
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-
                     <div className="flex items-end gap-4">
-
                       {/* Avatar */}
                       <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-[#0a0c10] bg-[#4d8eff]/10 text-2xl font-semibold text-[#adc6ff]">
                         {initials}
                       </div>
 
                       <div className="pb-1">
-
                         <h2 className="text-xl font-semibold text-white">
                           {profile.name}
                         </h2>
@@ -554,32 +557,25 @@ export default function ProfilePage() {
                         <p className="mt-1 text-sm text-[#8c909f]">
                           {profile.email}
                         </p>
-
                       </div>
-
                     </div>
-
 
                     {/* Role badge */}
                     <div className="rounded-full border border-[#adc6ff]/20 bg-[#4d8eff]/10 px-4 py-1.5 text-xs font-medium text-[#adc6ff]">
-                      Candidate
+                      {profile?.role === "recruiter" ? "Recruiter" : "Candidate"}
                     </div>
-
                   </div>
-
                 </div>
-
               </section>
 
+              {profile.role === "candidate" && (
+                <>
+                  {/* =================================================
+                      PERSONAL INFORMATION
+                  ================================================= */}
 
-              {/* =================================================
-                  PERSONAL INFORMATION
-              ================================================= */}
-
-              <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
-
+                  <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
                 <div className="mb-6">
-
                   <h2 className="text-lg font-semibold text-white">
                     Personal Information
                   </h2>
@@ -587,15 +583,11 @@ export default function ProfilePage() {
                   <p className="mt-1 text-sm text-[#8c909f]">
                     Basic information about you.
                   </p>
-
                 </div>
 
-
                 <div className="grid gap-5 md:grid-cols-2">
-
                   {/* Full Name */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Full Name
                     </label>
@@ -605,13 +597,10 @@ export default function ProfilePage() {
                       disabled
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-[#737b8c] outline-none"
                     />
-
                   </div>
-
 
                   {/* Email */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Email
                     </label>
@@ -621,13 +610,10 @@ export default function ProfilePage() {
                       disabled
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-[#737b8c] outline-none"
                     />
-
                   </div>
-
 
                   {/* Phone */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Phone
                     </label>
@@ -635,22 +621,14 @@ export default function ProfilePage() {
                     <input
                       type="tel"
                       value={form.phone}
-                      onChange={(e) =>
-                        handleChange(
-                          "phone",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("phone", e.target.value)}
                       placeholder="Enter phone number"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* Date of Birth */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Date of Birth
                     </label>
@@ -659,74 +637,53 @@ export default function ProfilePage() {
                       type="date"
                       value={form.date_of_birth}
                       onChange={(e) =>
-                        handleChange(
-                          "date_of_birth",
-                          e.target.value
-                        )
+                        handleChange("date_of_birth", e.target.value)
                       }
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* Location */}
                   <div className="md:col-span-2">
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Location
                     </label>
 
                     <input
                       value={form.location}
-                      onChange={(e) =>
-                        handleChange(
-                          "location",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("location", e.target.value)}
                       placeholder="City, State, Country"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* About */}
                   <div className="md:col-span-2">
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       About
                     </label>
 
                     <textarea
                       value={form.bio}
-                      onChange={(e) =>
-                        handleChange(
-                          "bio",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("bio", e.target.value)}
                       rows={4}
                       placeholder="Tell recruiters about yourself..."
                       className="mt-2 w-full resize-none rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
                 </div>
-
               </section>
+                </>
+              )}
 
+              {profile.role === "candidate" && (
+                <>
+                  {/* =================================================
+                      EDUCATION
+                  ================================================= */}
 
-              {/* =================================================
-                  EDUCATION
-              ================================================= */}
-
-              <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
-
+                  <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
                 <div className="mb-6">
-
                   <h2 className="text-lg font-semibold text-white">
                     Education
                   </h2>
@@ -734,81 +691,53 @@ export default function ProfilePage() {
                   <p className="mt-1 text-sm text-[#8c909f]">
                     Your academic background.
                   </p>
-
                 </div>
 
-
                 <div className="grid gap-5 md:grid-cols-2">
-
                   {/* College */}
                   <div className="md:col-span-2">
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       College / University
                     </label>
 
                     <input
                       value={form.college}
-                      onChange={(e) =>
-                        handleChange(
-                          "college",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("college", e.target.value)}
                       placeholder="Enter your college or university"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* Course */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Course / Degree
                     </label>
 
                     <input
                       value={form.course}
-                      onChange={(e) =>
-                        handleChange(
-                          "course",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("course", e.target.value)}
                       placeholder="e.g. B.Tech"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* Branch */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Branch / Specialization
                     </label>
 
                     <input
                       value={form.branch}
-                      onChange={(e) =>
-                        handleChange(
-                          "branch",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("branch", e.target.value)}
                       placeholder="e.g. CSE (AI & ML)"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* Current Year */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Current Year
                     </label>
@@ -816,41 +745,24 @@ export default function ProfilePage() {
                     <select
                       value={form.current_year}
                       onChange={(e) =>
-                        handleChange(
-                          "current_year",
-                          e.target.value
-                        )
+                        handleChange("current_year", e.target.value)
                       }
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition focus:border-[#4d8eff]/50"
                     >
-                      <option value="">
-                        Select year
-                      </option>
+                      <option value="">Select year</option>
 
-                      <option value="1">
-                        1st Year
-                      </option>
+                      <option value="1">1st Year</option>
 
-                      <option value="2">
-                        2nd Year
-                      </option>
+                      <option value="2">2nd Year</option>
 
-                      <option value="3">
-                        3rd Year
-                      </option>
+                      <option value="3">3rd Year</option>
 
-                      <option value="4">
-                        4th Year
-                      </option>
-
+                      <option value="4">4th Year</option>
                     </select>
-
                   </div>
-
 
                   {/* Graduation */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Graduation Year
                     </label>
@@ -859,21 +771,15 @@ export default function ProfilePage() {
                       type="number"
                       value={form.graduation_year}
                       onChange={(e) =>
-                        handleChange(
-                          "graduation_year",
-                          e.target.value
-                        )
+                        handleChange("graduation_year", e.target.value)
                       }
                       placeholder="e.g. 2028"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* CGPA */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       CGPA
                     </label>
@@ -884,31 +790,24 @@ export default function ProfilePage() {
                       min="0"
                       max="10"
                       value={form.cgpa}
-                      onChange={(e) =>
-                        handleChange(
-                          "cgpa",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleChange("cgpa", e.target.value)}
                       placeholder="e.g. 8.20"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
                 </div>
-
               </section>
+                </>
+              )}
 
+              {profile.role === "candidate" && (
+                <>
+                  {/* =================================================
+                      PROFESSIONAL LINKS
+                  ================================================= */}
 
-              {/* =================================================
-                  PROFESSIONAL LINKS
-              ================================================= */}
-
-              <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
-
+                  <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
                 <div className="mb-6">
-
                   <h2 className="text-lg font-semibold text-white">
                     Professional Links
                   </h2>
@@ -916,15 +815,11 @@ export default function ProfilePage() {
                   <p className="mt-1 text-sm text-[#8c909f]">
                     Add links to your professional presence.
                   </p>
-
                 </div>
 
-
                 <div className="space-y-5">
-
                   {/* GitHub */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       GitHub
                     </label>
@@ -933,21 +828,15 @@ export default function ProfilePage() {
                       type="url"
                       value={form.github_url}
                       onChange={(e) =>
-                        handleChange(
-                          "github_url",
-                          e.target.value
-                        )
+                        handleChange("github_url", e.target.value)
                       }
                       placeholder="https://github.com/username"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* LinkedIn */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       LinkedIn
                     </label>
@@ -956,21 +845,15 @@ export default function ProfilePage() {
                       type="url"
                       value={form.linkedin_url}
                       onChange={(e) =>
-                        handleChange(
-                          "linkedin_url",
-                          e.target.value
-                        )
+                        handleChange("linkedin_url", e.target.value)
                       }
                       placeholder="https://linkedin.com/in/username"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
 
                   {/* Portfolio */}
                   <div>
-
                     <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
                       Portfolio
                     </label>
@@ -979,21 +862,162 @@ export default function ProfilePage() {
                       type="url"
                       value={form.portfolio_url}
                       onChange={(e) =>
-                        handleChange(
-                          "portfolio_url",
-                          e.target.value
-                        )
+                        handleChange("portfolio_url", e.target.value)
                       }
                       placeholder="https://yourportfolio.com"
                       className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
                     />
-
                   </div>
-
                 </div>
-
               </section>
+                </>
+              )}
 
+              {profile.role === "recruiter" && (
+                <>
+                  {/* =================================================
+                      RECRUITER ORGANIZATION INFORMATION
+                  ================================================= */}
+
+                  <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
+                    <div className="mb-6">
+                      <h2 className="text-lg font-semibold text-white">
+                        Organization Information
+                      </h2>
+
+                      <p className="mt-1 text-sm text-[#8c909f]">
+                        Information about your organization and recruitment role.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-5 md:grid-cols-2">
+                      {/* Company */}
+                      <div>
+                        <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
+                          Company
+                        </label>
+
+                        <input
+                          value={recruiterForm.company}
+                          onChange={(e) =>
+                            handleRecruiterChange("company", e.target.value)
+                          }
+                          placeholder="Enter company name"
+                          className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
+                        />
+                      </div>
+
+                      {/* Job Title */}
+                      <div>
+                        <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
+                          Job Title
+                        </label>
+
+                        <input
+                          value={recruiterForm.job_title}
+                          onChange={(e) =>
+                            handleRecruiterChange("job_title", e.target.value)
+                          }
+                          placeholder="e.g. Talent Acquisition Manager"
+                          className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
+                        />
+                      </div>
+
+                      {/* Location */}
+                      <div className="md:col-span-2">
+                        <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
+                          Location
+                        </label>
+
+                        <input
+                          value={recruiterForm.location}
+                          onChange={(e) =>
+                            handleRecruiterChange("location", e.target.value)
+                          }
+                          placeholder="City, State, Country"
+                          className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* =================================================
+                      RECRUITER PROFESSIONAL INFORMATION
+                  ================================================= */}
+
+                  <section className="rounded-2xl border border-[#252a35] bg-[rgba(10,12,16,0.8)] p-7 backdrop-blur-xl">
+                    <div className="mb-6">
+                      <h2 className="text-lg font-semibold text-white">
+                        Professional Information
+                      </h2>
+
+                      <p className="mt-1 text-sm text-[#8c909f]">
+                        Add information candidates can use to understand your
+                        organization.
+                      </p>
+                    </div>
+
+                    <div className="space-y-5">
+                      {/* About */}
+                      <div>
+                        <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
+                          About
+                        </label>
+
+                        <textarea
+                          value={recruiterForm.bio}
+                          onChange={(e) =>
+                            handleRecruiterChange("bio", e.target.value)
+                          }
+                          rows={5}
+                          placeholder="Tell candidates about your company or recruitment role..."
+                          className="mt-2 w-full resize-none rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
+                        />
+                      </div>
+
+                      {/* Company Website */}
+                      <div>
+                        <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
+                          Company Website
+                        </label>
+
+                        <input
+                          type="url"
+                          value={recruiterForm.company_website}
+                          onChange={(e) =>
+                            handleRecruiterChange(
+                              "company_website",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="https://company.com"
+                          className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
+                        />
+                      </div>
+
+                      {/* LinkedIn */}
+                      <div>
+                        <label className="text-xs font-medium uppercase tracking-wider text-[#646977]">
+                          LinkedIn
+                        </label>
+
+                        <input
+                          type="url"
+                          value={recruiterForm.linkedin_url}
+                          onChange={(e) =>
+                            handleRecruiterChange(
+                              "linkedin_url",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="https://linkedin.com/in/username"
+                          className="mt-2 w-full rounded-xl border border-[#424754] bg-[#0c0e12] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#737b8c] focus:border-[#4d8eff]/50"
+                        />
+                      </div>
+                    </div>
+                  </section>
+                </>
+              )}
 
               {/* =================================================
                   STATUS MESSAGES
@@ -1001,50 +1025,32 @@ export default function ProfilePage() {
 
               {error && (
                 <div className="rounded-xl border border-[#ffb4ab]/20 bg-[#ffb4ab]/10 px-5 py-4">
-
-                  <p className="text-sm text-[#ffb4ab]">
-                    {error}
-                  </p>
-
+                  <p className="text-sm text-[#ffb4ab]">{error}</p>
                 </div>
               )}
-
 
               {success && (
                 <div className="rounded-xl border border-[#4edea3]/20 bg-[#4edea3]/10 px-5 py-4">
-
-                  <p className="text-sm text-[#4edea3]">
-                    {success}
-                  </p>
-
+                  <p className="text-sm text-[#4edea3]">{success}</p>
                 </div>
               )}
-
 
               {/* =================================================
                   SAVE BUTTON
               ================================================= */}
 
               <div className="flex justify-end pb-8">
-
                 <button
                   type="submit"
                   disabled={saving}
                   className="rounded-xl bg-[#adc6ff] px-7 py-3 text-sm font-semibold text-[#002e6a] shadow-[0_0_20px_rgba(77,142,255,0.15)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {saving
-                    ? "Saving..."
-                    : "Save Changes"}
+                  {saving ? "Saving..." : "Save Changes"}
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </main>
-
       </div>
     </>
   );
