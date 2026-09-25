@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,7 +17,7 @@ interface AnalysisStep {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ANALYSIS_STEPS: AnalysisStep[] = [
-  { threshold: 0,  label: "AI Analyzing..." },
+  { threshold: 0, label: "AI Analyzing..." },
   { threshold: 30, label: "Extracting Entities..." },
   { threshold: 60, label: "Mapping Career Trajectory..." },
   { threshold: 85, label: "Finalizing Confidence Score..." },
@@ -59,7 +59,6 @@ function getStatusLabel(progress: number): string {
 function TopNav() {
   return (
     <nav className="fixed top-0 w-full bg-[#111318]/80 backdrop-blur-xl border-b border-[#424754] flex items-center justify-between px-8 h-16 z-50">
-
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[#adc6ff] text-2xl">
@@ -73,7 +72,6 @@ function TopNav() {
 
       {/* Desktop links */}
       <div className="hidden md:flex gap-6">
-
         <Link
           href="/dashboard"
           className="text-[15px] text-[#c2c6d6] hover:text-[#adc6ff] transition-colors duration-200"
@@ -101,18 +99,18 @@ function TopNav() {
         >
           Settings
         </span>
-
       </div>
 
       {/* Avatar */}
-      <div className="h-8 w-8 rounded-full bg-[#282a2e] border border-[#424754] overflow-hidden cursor-pointer">
-        <img
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDN6r_rvoEY8AvtnU5k2J335DT3Wsu-hGJpZYJ4z35OGd62ia982tpLmCdmAAT1hOLxmf8lUmlCLAhoD5ank72hHP1zc6NgE5Gx07QmgqmEmuzADC7LwBHuduhiCJTX8WMHlCx67oOT5jG7hPWqaqAWCYPnIgq4xFle8JEShTN3StrjgBw5M4tc86J_C9Wit6KN3Zo-tG_Qy_8941RymiftdPX1niMxsg5z4VVultrqP8-iWEXp74rt1lHWpVmaXUp8cYrDvlhYgwY"
-          alt="User Profile"
-          className="h-full w-full object-cover"
-        />
-      </div>
-
+      <Link
+        href="/profile"
+        title="My Profile"
+        className="w-9 h-9 rounded-full bg-[#282a2e] border border-[#424754] flex items-center justify-center text-[#c2c6d6] hover:text-white hover:border-[#adc6ff]/40 transition-all"
+      >
+        <span className="material-symbols-outlined text-[20px]">
+          account_circle
+        </span>
+      </Link>
     </nav>
   );
 }
@@ -141,7 +139,6 @@ function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col gap-1 w-[240px] fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#0c0e12] border-r border-[#424754] px-4 pt-6 z-40">
-
       {items.map(({ icon, label, href, active }) => (
         <Link
           key={label}
@@ -152,13 +149,9 @@ function Sidebar() {
               : "text-[#c2c6d6] hover:bg-[#333539]/50 hover:text-white"
           }`}
         >
-          <span className="material-symbols-outlined">
-            {icon}
-          </span>
+          <span className="material-symbols-outlined">{icon}</span>
 
-          <span className="text-[15px]">
-            {label}
-          </span>
+          <span className="text-[15px]">{label}</span>
         </Link>
       ))}
 
@@ -167,15 +160,10 @@ function Sidebar() {
         title="Settings page coming soon"
         className="flex items-center gap-3 px-4 py-2 rounded-xl text-[#8c909f] cursor-not-allowed"
       >
-        <span className="material-symbols-outlined">
-          settings
-        </span>
+        <span className="material-symbols-outlined">settings</span>
 
-        <span className="text-[15px]">
-          Settings
-        </span>
+        <span className="text-[15px]">Settings</span>
       </div>
-
     </aside>
   );
 }
@@ -204,7 +192,7 @@ function DropZone({
   onFileInputChange,
 }: DropZoneProps) {
   const isUploading = uploadState === "uploading";
-  const isDragging  = uploadState === "dragging";
+  const isDragging = uploadState === "dragging";
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -226,14 +214,20 @@ function DropZone({
             : "border-2 border-dashed border-[#424754] hover:border-[#4d8eff]/60 group-hover:bg-[#1a1c20]/40"
         } ${isUploading ? "pointer-events-none opacity-40" : ""}`}
         onDragOver={handleDragOver}
-        onDragEnter={(e) => { e.preventDefault(); }}
-        onDragLeave={(e) => { e.preventDefault(); }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+        }}
         onDrop={handleDrop}
         onClick={!isUploading ? onBrowseClick : undefined}
       >
         <div className="flex flex-col items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-[#4d8eff]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-[#adc6ff] text-5xl">cloud_upload</span>
+            <span className="material-symbols-outlined text-[#adc6ff] text-5xl">
+              cloud_upload
+            </span>
           </div>
           <div className="text-center">
             <p className="text-[24px] font-medium text-white mb-2">
@@ -247,7 +241,10 @@ function DropZone({
           </div>
           <button
             className="mt-4 px-10 py-4 bg-[#adc6ff] text-[#002e6a] text-[13px] font-medium rounded-full hover:shadow-[0_0_20px_rgba(77,142,255,0.2)] transition-all active:scale-95"
-            onClick={(e) => { e.stopPropagation(); onBrowseClick(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onBrowseClick();
+            }}
           >
             Browse Files
           </button>
@@ -279,9 +276,13 @@ function DropZone({
                 <span className="font-mono text-[14px] text-[#adc6ff] uppercase tracking-widest mb-1">
                   Neural Process Active
                 </span>
-                <h3 className="text-[24px] font-medium text-white transition-all">{statusLabel}</h3>
+                <h3 className="text-[24px] font-medium text-white transition-all">
+                  {statusLabel}
+                </h3>
               </div>
-              <span className="text-[24px] font-medium text-[#adc6ff] tabular-nums">{progress}%</span>
+              <span className="text-[24px] font-medium text-[#adc6ff] tabular-nums">
+                {progress}%
+              </span>
             </div>
 
             {/* Progress bar */}
@@ -295,12 +296,20 @@ function DropZone({
             {/* Info tiles */}
             <div className="mt-16 grid grid-cols-2 gap-6">
               <div className="p-6 bg-[#1e2024] rounded-xl border border-[#424754]">
-                <span className="material-symbols-outlined text-[#adc6ff] mb-2">psychology</span>
-                <p className="text-[13px] font-medium text-[#c2c6d6]">Cognitive Mapping</p>
+                <span className="material-symbols-outlined text-[#adc6ff] mb-2">
+                  psychology
+                </span>
+                <p className="text-[13px] font-medium text-[#c2c6d6]">
+                  Cognitive Mapping
+                </p>
               </div>
               <div className="p-6 bg-[#1e2024] rounded-xl border border-[#424754]">
-                <span className="material-symbols-outlined text-[#4edea3] mb-2">verified</span>
-                <p className="text-[13px] font-medium text-[#c2c6d6]">Entity Extraction</p>
+                <span className="material-symbols-outlined text-[#4edea3] mb-2">
+                  verified
+                </span>
+                <p className="text-[13px] font-medium text-[#c2c6d6]">
+                  Entity Extraction
+                </p>
               </div>
             </div>
           </div>
@@ -312,10 +321,14 @@ function DropZone({
         <div className="absolute inset-0 glass-card rounded-[2rem] flex flex-col items-center justify-center p-16 z-10">
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="w-20 h-20 rounded-full bg-[#4edea3]/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[#4edea3] text-5xl">check_circle</span>
+              <span className="material-symbols-outlined text-[#4edea3] text-5xl">
+                check_circle
+              </span>
             </div>
             <div>
-              <h3 className="text-[24px] font-medium text-white">Analysis Complete</h3>
+              <h3 className="text-[24px] font-medium text-white">
+                Analysis Complete
+              </h3>
               <p className="text-[15px] text-[#c2c6d6] mt-2">
                 Resume parsed successfully. Redirecting to results…
               </p>
@@ -330,10 +343,14 @@ function DropZone({
         <div className="absolute inset-0 glass-card rounded-[2rem] flex flex-col items-center justify-center p-16 z-10">
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="w-20 h-20 rounded-full bg-[#ffb4ab]/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[#ffb4ab] text-5xl">error</span>
+              <span className="material-symbols-outlined text-[#ffb4ab] text-5xl">
+                error
+              </span>
             </div>
             <div>
-              <h3 className="text-[24px] font-medium text-white">Upload Failed</h3>
+              <h3 className="text-[24px] font-medium text-white">
+                Upload Failed
+              </h3>
               <p className="text-[15px] text-[#c2c6d6] mt-2">
                 Something went wrong. Please check your file and try again.
               </p>
@@ -368,7 +385,9 @@ function InfoCard({
 }) {
   return (
     <div className="p-6 glass-card rounded-xl">
-      <h4 className="text-[13px] font-bold text-[#adc6ff] mb-4 uppercase tracking-wide">{title}</h4>
+      <h4 className="text-[13px] font-bold text-[#adc6ff] mb-4 uppercase tracking-wide">
+        {title}
+      </h4>
       <p className="text-[15px] text-[#c2c6d6]">
         {body}
         {linkText && linkHref && (
@@ -384,55 +403,43 @@ function InfoCard({
 
 function MobileBottomNav() {
   const items = [
-    {
-      icon: "home",
-      label: "Home",
-      href: "/",
-      active: false,
-    },
-    {
-      icon: "history",
-      label: "History",
-      href: "/resumes",
-      active: false,
-    },
-    {
-      icon: "add_circle",
-      label: "Upload",
-      href: "/upload",
-      active: true,
-    },
-    {
-      icon: "dashboard",
-      label: "Dashboard",
-      href: "/dashboard",
-      active: false,
-    },
-  ];
+  {
+    icon: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    icon: "description",
+    label: "Resumes",
+    href: "/resumes",
+  },
+  {
+    icon: "cloud_upload",
+    label: "Upload",
+    href: "/upload",
+  },
+  {
+    icon: "person",
+    label: "Profile",
+    href: "/profile",
+  },
+];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-[#111318]/90 backdrop-blur-lg border-t border-[#424754] rounded-t-[0.75rem] shadow-[0px_-8px_32px_rgba(0,0,0,0.8)]">
-
       {items.map(({ icon, label, href, active }) => (
         <Link
           key={label}
           href={href}
           className={`flex flex-col items-center transition-all active:scale-90 ${
-            active
-              ? "text-[#adc6ff]"
-              : "text-[#c2c6d6] hover:text-white"
+            active ? "text-[#adc6ff]" : "text-[#c2c6d6] hover:text-white"
           }`}
         >
-          <span className="material-symbols-outlined">
-            {icon}
-          </span>
+          <span className="material-symbols-outlined">{icon}</span>
 
-          <span className="text-[13px] font-medium">
-            {label}
-          </span>
+          <span className="text-[13px] font-medium">{label}</span>
         </Link>
       ))}
-
     </nav>
   );
 }
@@ -443,7 +450,9 @@ function Footer() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-8">
         <div className="mb-6 md:mb-0">
           <span className="text-[24px] font-medium text-white">RecruitAI</span>
-          <p className="text-[15px] text-[#c2c6d6] mt-1">© 2024 RecruitAI. Precision Intelligence.</p>
+          <p className="text-[15px] text-[#c2c6d6] mt-1">
+            © 2024 RecruitAI. Precision Intelligence.
+          </p>
         </div>
         <div className="flex gap-10">
           {["Privacy", "Terms", "API Docs", "Contact"].map((link) => (
@@ -464,80 +473,78 @@ function Footer() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UploadPage() {
-  const router = useRouter(); 
+  const router = useRouter();
 
   const [uploadState, setUploadState] = useState<UploadState>("idle");
-  const [progress, setProgress]       = useState(0);
+  const [progress, setProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [statusLabel, setStatusLabel]   = useState(ANALYSIS_STEPS[0].label);
+  const [statusLabel, setStatusLabel] = useState(ANALYSIS_STEPS[0].label);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const intervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Simulated upload progress (replace body with real axios call) ──
-  const startUpload = useCallback(async (file: File) => {
-  setSelectedFile(file);
-  setUploadState("uploading");
-  setProgress(0);
-  setStatusLabel("Uploading Resume...");
+  const startUpload = useCallback(
+    async (file: File) => {
+      setSelectedFile(file);
+      setUploadState("uploading");
+      setProgress(0);
+      setStatusLabel("Uploading Resume...");
 
-  const formData = new FormData();
-  formData.append("file", file);
+      const formData = new FormData();
+      formData.append("file", file);
 
-  try {
-    const response = await api.post(
-  "/upload",
-  formData,
-  {
-    onUploadProgress: (event) => {
-      if (event.total) {
-        const uploadProgress = Math.round(
-          (event.loaded * 100) / event.total
-        );
+      try {
+        const response = await api.post("/upload", formData, {
+          onUploadProgress: (event) => {
+            if (event.total) {
+              const uploadProgress = Math.round(
+                (event.loaded * 100) / event.total,
+              );
 
-        // Keep some room for backend parsing
-        const displayProgress = Math.min(
-          Math.round(uploadProgress * 0.7),
-          70
-        );
+              // Keep some room for backend parsing
+              const displayProgress = Math.min(
+                Math.round(uploadProgress * 0.7),
+                70,
+              );
 
-        setProgress(displayProgress);
-        setStatusLabel(getStatusLabel(displayProgress));
+              setProgress(displayProgress);
+              setStatusLabel(getStatusLabel(displayProgress));
+            }
+          },
+        });
+
+        console.log("Upload response:", response.data);
+
+        // Backend request succeeded
+        setProgress(100);
+        setStatusLabel("Analysis Complete");
+        setUploadState("success");
+
+        // Backend should return the created resume ID
+        const parsedId = response.data.id;
+
+        setTimeout(() => {
+          if (parsedId) {
+            router.push(`/resumes/${parsedId}`);
+          } else {
+            router.push("/resumes");
+          }
+        }, 1000);
+      } catch (error) {
+        console.error("Upload failed:", error);
+
+        setUploadState("error");
+        setProgress(0);
+        setStatusLabel("Upload Failed");
       }
     },
-  }
-);
-
-    console.log("Upload response:", response.data);
-
-    // Backend request succeeded
-    setProgress(100);
-    setStatusLabel("Analysis Complete");
-    setUploadState("success");
-
-    // Backend should return the created resume ID
-    const parsedId = response.data.id;
-
-    setTimeout(() => {
-      if (parsedId) {
-        router.push(`/resumes/${parsedId}`);
-      } else {
-        router.push("/resumes");
-      }
-    }, 1000);
-
-  } catch (error) {
-    console.error("Upload failed:", error);
-
-    setUploadState("error");
-    setProgress(0);
-    setStatusLabel("Upload Failed");
-  }
-}, [router]); 
+    [router],
+  );
 
   const handleFileDrop = useCallback(
     (file: File) => startUpload(file),
-    [startUpload]
+    [startUpload],
   );
 
   const handleBrowseClick = () => {
@@ -605,8 +612,8 @@ export default function UploadPage() {
                 Analyze Resume
               </h1>
               <p className="text-[18px] leading-relaxed text-[#c2c6d6] max-w-2xl">
-                Deploy our neural engine to extract skills, experience, and cultural fit markers with
-                99.4% precision.
+                Deploy our neural engine to extract skills, experience, and
+                cultural fit markers with 99.4% precision.
               </p>
             </header>
 
