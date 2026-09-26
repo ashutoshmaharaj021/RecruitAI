@@ -36,3 +36,7 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+    role: str | None = None

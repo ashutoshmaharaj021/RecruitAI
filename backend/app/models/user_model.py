@@ -16,22 +16,29 @@ class User(Base):
         String(255),
         unique=True,
         nullable=False,
-        index=True
+        index=True,
     )
 
     password_hash = Column(
         String(255),
-        nullable=False
+        nullable=True,
+    )
+
+    google_sub = Column(
+        String(255),
+        unique=True,
+        nullable=True,
+        index=True,
     )
 
     role = Column(
         String(20),
         nullable=False,
-        default="candidate"
+        default="candidate",
     )
 
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
-        nullable=False
+        nullable=False,
     )

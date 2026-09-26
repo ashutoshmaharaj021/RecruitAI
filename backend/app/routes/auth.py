@@ -9,10 +9,12 @@ from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
     UserResponse,
+    GoogleAuthRequest
 )
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
 from app.security.auth import get_current_user
+from app.security.google import verify_google_token
 
 
 router = APIRouter()
@@ -144,3 +146,92 @@ def register(
     db.refresh(new_user)
 
     return new_user
+
+@router.post("/google", response_model=LoginResponse)
+def google_login(
+    google_data: GoogleAuthRequest,
+    db: Session = Depends(get_db),
+):
+    google_user = verify_google_token(google_data.credential)
+
+    google_sub = google_user.get("sub")
+    email = google_user.get("email")
+    name = google_user.get("name") or email.split("@")[0]
+
+    if not google_sub or not email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google account information is incomplete",
+        )
+
+    user = (
+        db.query(User)
+        .filter(User.google_sub == google_sub)
+        .first()
+    )
+
+    if user:
+        access_token = create_access_token(
+            {
+                "sub": str(user.id),
+                "role": user.role,
+            }
+        )
+
+        return LoginResponse(
+            access_token=access_token,
+            token_type="bearer",
+        )
+
+    user = (
+        db.query(User)
+        .filter(User.email == email)
+        .first()
+    )
+
+    if user:
+        user.google_sub = google_sub
+        db.commit()
+        db.refresh(user)
+
+        access_token = create_access_token(
+            {
+                "sub": str(user.id),
+                "role": user.role,
+            }
+        )
+
+        return LoginResponse(
+            access_token=access_token,
+            token_type="bearer",
+        )
+
+    if google_data.role not in {"candidate", "recruiter"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Role must be either candidate or recruiter",
+        )
+
+    new_user = User(
+        name=name,
+        email=email,
+        password_hash=None,
+        google_sub=google_sub,
+        role=google_data.role,
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    access_token = create_access_token(
+        {
+            "sub": str(new_user.id),
+            "role": new_user.role,
+        }
+    )
+
+    return LoginResponse(
+        access_token=access_token,
+        token_type="bearer",
+    )
