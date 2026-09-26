@@ -5,7 +5,10 @@ from app.database.db import get_db
 from app.models.job_model import Job
 from app.models.resume_model import Resume
 from app.models.user_model import User
-from app.schemas.matching import MatchingResponse
+from app.schemas.matching import (
+    MatchingResponse,
+    CandidateJobMatchResponse,
+)
 from app.security.auth import get_current_user
 from app.matching.matcher import calculate_skill_match
 
@@ -14,6 +17,76 @@ router = APIRouter(
     prefix="/matching",
     tags=["Matching"],
 )
+
+
+@router.get(
+    "/jobs",
+    response_model=list[CandidateJobMatchResponse],
+)
+def get_matching_jobs(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Return all jobs ranked by match score for the current candidate.
+
+    Candidates can only use their own resume.
+    """
+
+    if current_user.role != "candidate":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only candidates can access job matching",
+        )
+
+    resume = (
+        db.query(Resume)
+        .filter(Resume.user_id == current_user.id)
+        .order_by(Resume.id.desc())
+        .first()
+    )
+
+    if resume is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No resume found for this candidate",
+        )
+
+    jobs = (
+        db.query(Job)
+        .order_by(Job.created_at.desc())
+        .all()
+    )
+
+    results = []
+
+    for job in jobs:
+        result = calculate_skill_match(
+            resume_skills=resume.skills or "",
+            required_skills=job.required_skills or "",
+        )
+
+        results.append(
+            CandidateJobMatchResponse(
+                job_id=job.id,
+                title=job.title,
+                company=job.company,
+                match_score=result["match_score"],
+                matched_skills=result["matched_skills"],
+                missing_skills=result["missing_skills"],
+                matched_count=result["matched_count"],
+                required_count=result["required_count"],
+            )
+        )
+
+    results.sort(
+        key=lambda item: item.match_score,
+        reverse=True,
+    )
+
+    return results
+
+
 
 
 @router.get(

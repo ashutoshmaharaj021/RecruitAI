@@ -15,6 +15,17 @@ interface Candidate {
   skills: string;
 }
 
+interface RecommendedJob {
+  job_id: number;
+  title: string;
+  company: string;
+  match_score: number;
+  matched_skills: string[];
+  missing_skills: string[];
+  matched_count: number;
+  required_count: number;
+}
+
 interface Stat {
   label: string;
   value: string;
@@ -498,8 +509,14 @@ export default function DashboardPage() {
   };
 
   const [resumes, setResumes] = useState<Candidate[]>([]);
+  const [recommendedJobs, setRecommendedJobs] = useState<RecommendedJob[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [matchingLoading, setMatchingLoading] = useState(true);
+
   const [error, setError] = useState("");
+  const [matchingError, setMatchingError] = useState("");
+
   const [role, setRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -529,6 +546,32 @@ export default function DashboardPage() {
         setError("Unable to load resume data.");
       } finally {
         setLoading(false);
+      }
+
+      try {
+        setMatchingLoading(true);
+        setMatchingError("");
+
+        const response = await api.get<RecommendedJob[]>("/matching/jobs");
+
+        setRecommendedJobs(response.data);
+      } catch (err: any) {
+        console.error("Failed to fetch recommended jobs:", err);
+
+        if (err.response?.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        if (err.response?.status === 404) {
+          setMatchingError("Upload a resume to get personalized job matches.");
+        } else {
+          setMatchingError(
+            err.response?.data?.detail || "Unable to load recommended jobs.",
+          );
+        }
+      } finally {
+        setMatchingLoading(false);
       }
     };
 
@@ -1040,6 +1083,162 @@ export default function DashboardPage() {
                       </p>
                     )}
                   </div>
+                </section>
+
+                {/* Recommended Jobs */}
+                <section className="mt-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-semibold text-white">
+                        Recommended Jobs
+                      </h2>
+
+                      <p className="text-sm text-[#8c909f] mt-1">
+                        Jobs matched with your resume skills
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/jobs"
+                      className="text-sm text-[#adc6ff] hover:text-white transition-colors"
+                    >
+                      View Jobs
+                    </Link>
+                  </div>
+
+                  {matchingLoading ? (
+                    <div className="glass-card rounded-xl p-8 text-center">
+                      <span className="material-symbols-outlined animate-spin text-[#adc6ff] text-3xl">
+                        progress_activity
+                      </span>
+
+                      <p className="text-[#8c909f] text-sm mt-3">
+                        Finding jobs that match your skills...
+                      </p>
+                    </div>
+                  ) : matchingError ? (
+                    <div className="glass-card rounded-xl p-8 text-center">
+                      <span className="material-symbols-outlined text-[#ffb786] text-3xl">
+                        work_off
+                      </span>
+
+                      <p className="text-white font-medium mt-3">
+                        {matchingError}
+                      </p>
+
+                      <Link
+                        href="/upload"
+                        className="inline-flex items-center gap-2 mt-5 px-4 py-2.5 rounded-xl bg-[#adc6ff] text-[#002e6a] text-sm font-semibold hover:brightness-110 transition-all"
+                      >
+                        Upload Resume
+                        <span className="material-symbols-outlined text-[18px]">
+                          upload_file
+                        </span>
+                      </Link>
+                    </div>
+                  ) : recommendedJobs.length === 0 ? (
+                    <div className="glass-card rounded-xl p-8 text-center">
+                      <span className="material-symbols-outlined text-[#8c909f] text-3xl">
+                        work_outline
+                      </span>
+
+                      <p className="text-white font-medium mt-3">
+                        No matching jobs found
+                      </p>
+
+                      <p className="text-[#8c909f] text-sm mt-1">
+                        Check back after recruiters add new jobs.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {recommendedJobs.map((job) => (
+                        <div
+                          key={job.job_id}
+                          className="glass-card rounded-xl p-6"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-white">
+                                {job.title}
+                              </h3>
+
+                              <p className="text-sm text-[#8c909f] mt-1">
+                                {job.company}
+                              </p>
+                            </div>
+
+                            <div className="shrink-0 text-right">
+                              <p className="text-2xl font-semibold text-[#4edea3]">
+                                {Math.round(job.match_score)}%
+                              </p>
+
+                              <p className="text-xs text-[#8c909f]">Match</p>
+                            </div>
+                          </div>
+
+                          <div className="mt-5">
+                            <div className="flex items-center justify-between text-xs mb-2">
+                              <span className="text-[#8c909f]">
+                                Skill match
+                              </span>
+
+                              <span className="text-white">
+                                {job.matched_count}/{job.required_count}
+                              </span>
+                            </div>
+
+                            <div className="w-full h-1.5 bg-[#333539] rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-[#4edea3] rounded-full"
+                                style={{
+                                  width: `${Math.min(job.match_score, 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {job.matched_skills.length > 0 && (
+                            <div className="mt-5">
+                              <p className="text-xs text-[#8c909f] uppercase tracking-wider mb-2">
+                                Your matching skills
+                              </p>
+
+                              <div className="flex flex-wrap gap-2">
+                                {job.matched_skills.map((skill) => (
+                                  <span
+                                    key={skill}
+                                    className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20"
+                                  >
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {job.missing_skills.length > 0 && (
+                            <div className="mt-4">
+                              <p className="text-xs text-[#8c909f] uppercase tracking-wider mb-2">
+                                Skills to develop
+                              </p>
+
+                              <div className="flex flex-wrap gap-2">
+                                {job.missing_skills.slice(0, 5).map((skill) => (
+                                  <span
+                                    key={skill}
+                                    className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#ffb786]/10 text-[#ffb786] border border-[#ffb786]/20"
+                                  >
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
 
                 {/* Section header */}
